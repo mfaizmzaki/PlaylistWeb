@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <script src="gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="
         script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
@@ -103,7 +102,7 @@
             display: inline-block; padding: 4px 24px; background: rgba(255,204,0,0.06);
         }
         .tab-nav {
-            display: flex; gap: 0;
+            display: flex; gap: 0; justify-content: center;
             border-bottom: 3px solid var(--um-blue);
             margin-bottom: 25px; position: relative; z-index: 1;
         }
@@ -459,7 +458,7 @@
     <div class="tab-nav">
         <button class="tab-btn" id="tabMedal">🏅 Medal Slide</button>
         <button class="tab-btn" id="tabMain">🎧 Main Control</button>
-        <button class="tab-btn" id="tabContingent">🏳️ University Songs (41)</button>
+        <button class="tab-btn" id="tabContingent">🏳️ University Songs</button>
         <button class="tab-btn" id="tabSlides">🖼️ Slides</button>
     </div>
 
@@ -512,7 +511,7 @@
     <!-- ======= TAB 2: UNIVERSITY SONGS ======= -->
     <div id="contingentTabContent" class="tab-content">
         <div class="section">
-            <div class="section-title contingent-title">🏳️ University Songs · 41 Tracks</div>
+            <div class="section-title contingent-title">🏳️ University Songs</div>
             <div class="section-sub">Click any university song to play instantly (fades in/out).</div>
             <div class="btn-grid" id="contingentGrid"></div>
         </div>
@@ -578,29 +577,7 @@ const HOUSE_SONGS = [
     './music/Situasi.mp3','./music/Standing In The Eyes Of The World.mp3',
     './music/Teguh Mimpi.mp3','./music/Warisan.mp3'
 ];
-const CONTINGENT_SONGS = [
-    './music/Lagu Universiti/ALAM.MP3','./music/Lagu Universiti/City University.mp3',
-    './music/Lagu Universiti/IIUM.mp3','./music/Lagu Universiti/Kolej Komuniti .mp3',
-    './music/Lagu Universiti/KPTM.wav','./music/Lagu Universiti/MAHSA.mp3',
-    './music/Lagu Universiti/MMU.mp3','./music/Lagu Universiti/MSU.mp3',
-    './music/Lagu Universiti/Politeknik Malaysia.mp3','./music/Lagu Universiti/TESDEC.mp3',
-    './music/Lagu Universiti/UC TATI.mp3','./music/Lagu Universiti/UCAM.mp3',
-    './music/Lagu Universiti/UCSI.mp3','./music/Lagu Universiti/UiTM.mp3',
-    './music/Lagu Universiti/UKM.mp3','./music/Lagu Universiti/UMK.mp3',
-    './music/Lagu Universiti/UMPSA.mp3','./music/Lagu Universiti/UMS.mpeg',
-    './music/Lagu Universiti/UMT.mp3','./music/Lagu Universiti/UniKL.mp3',
-    './music/Lagu Universiti/UNIKOP.mpeg','./music/Lagu Universiti/UniMAP.mp3',
-    './music/Lagu Universiti/UNIMAS.mp3','./music/Lagu Universiti/UNIRAZAK.mp3',
-    './music/Lagu Universiti/UNISEL.mp3','./music/Lagu Universiti/UniSZA.mp3',
-    './music/Lagu Universiti/UNITAR.mp3','./music/Lagu Universiti/UNITEN.mp3',
-    './music/Lagu Universiti/Universiti Malaya.mp3','./music/Lagu Universiti/UPM.mp3',
-    './music/Lagu Universiti/UPNM.mp3','./music/Lagu Universiti/UPSI.mp3',
-    './music/Lagu Universiti/UPTM.mp3','./music/Lagu Universiti/USIM.mp3',
-    './music/Lagu Universiti/USM.mp3','./music/Lagu Universiti/UTeM.mp3',
-    './music/Lagu Universiti/UTHM.mp3','./music/Lagu Universiti/UTM.mp3',
-    './music/Lagu Universiti/UTP.mp3','./music/Lagu Universiti/UUM.mp3'
-];
-
+const CONTINGENT_SONGS = TEAMS.filter(t => t.anthem).map(t => './' + t.anthem);
 // 64 logos
 const LOGO_FILES = [
     'alam.png', 'APU.png', 'City University.png', 'gmiLogo.png',
@@ -808,19 +785,15 @@ uploadZone.addEventListener('drop', e => {
 });
 
 const contingentGrid = document.getElementById('contingentGrid');
-CONTINGENT_SONGS.forEach((path, index) => {
+TEAMS.filter(t => t.anthem).forEach(t => {   // one button per institution that has a song (teams.js is the single source)
     const btn = document.createElement('button');
     btn.className = 'btn btn-contingent';
-    btn.dataset.url = path;
-    let displayName = path.replace('./music/Lagu Universiti/', '').replace(/\.[^/.]+$/, '');
-    if (displayName.length > 25) displayName = displayName.substring(0,23)+'…';
-    btn.textContent = `🏳️ ${displayName}`;
-    btn.addEventListener('click', () => {
-        sendCommand({ action: 'playContingent', url: path });
-    });
+    btn.dataset.url = './' + t.anthem;
+    btn.title = t.name;
+    btn.textContent = `🏳️ ${t.short}`;
+    btn.addEventListener('click', () => sendCommand({ action: 'playContingent', url: './' + t.anthem }));
     contingentGrid.appendChild(btn);
 });
-
 // ============================================================
 // 8. SLIDES (PDF/PNG upload, preview, thumbnails, reorder/delete)
 // ============================================================
