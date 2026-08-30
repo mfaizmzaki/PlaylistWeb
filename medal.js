@@ -65,5 +65,15 @@
     }
   }
 
-  window.Medal = { drawBase, drawContained, makeCloth, drawWaving };
+  // Sport pictogram + name, lower-left (over the faint decorative arcs).
+  function drawSport(ctx, img, name) {
+    if (img) drawContained(ctx, img, 40 * K, 372 * K, 250 * K, 492 * K, 0);
+    if (name) {
+      ctx.save(); ctx.fillStyle = '#001f5b'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.font = 'bold ' + 22 * K + 'px Oswald, "Segoe UI", Arial, sans-serif';
+      ctx.fillText(name.toUpperCase(), 145 * K, 500 * K); ctx.restore();
+    }
+  }
+
+  window.Medal = { drawBase, drawContained, makeCloth, drawWaving, drawSport };
 })();

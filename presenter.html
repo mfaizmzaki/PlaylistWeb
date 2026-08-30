@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="teams.js"></script>
+    <script src="sports.js"></script>
     <script src="medal.js"></script>
     <style>
         /* ===== ALL STYLES (unchanged – exactly as before) ===== */
@@ -413,6 +414,9 @@
         .medal-box.gold   { border-color:#e6b800; background:linear-gradient(#fffbe6,#fff); }
         .medal-box.silver { border-color:#9aa3ad; background:linear-gradient(#f3f5f7,#fff); }
         .medal-box.bronze { border-color:#b87333; background:linear-gradient(#fbf0e6,#fff); }
+        .medal-box.sport  { border-color:var(--um-blue); background:linear-gradient(#eef3ff,#fff); margin-bottom:14px; min-height:0; }
+        .medal-box.sport .logo-grid { max-height:150px; }
+        .medal-box.sport .logo-item img { height:56px; }
         .medal-box h4 { font-family:'Bangers','Impact',cursive; letter-spacing:2px; font-size:1.4rem; color:#1a1a1a; }
         .medal-box .picked { min-height:2.4em; font-family:'Oswald',sans-serif; font-weight:700; font-size:0.95rem; color:var(--um-blue); margin:4px 0 8px; display:flex; align-items:center; gap:8px; }
         .medal-box .picked img { height:2.2em; width:2.2em; object-fit:contain; }
@@ -461,7 +465,8 @@
     <div id="medalTabContent" class="tab-content active">
         <div class="section">
             <div class="section-title editor-title">🏅 Medal Slide</div>
-            <div class="section-sub">1 · Click the winning university in each box (type to search). &nbsp;2 · Show on projector. &nbsp;3 · Play the champion's anthem.</div>
+            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Show on projector. &nbsp;4 · Play the champion's anthem.</div>
+            <div class="medal-box sport" data-medal="sport"><h4>🏟️ SUKAN · SPORT</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search sport…"><div class="logo-grid"></div></div>
             <div class="medal-boxes" id="medalBoxes">
                 <div class="medal-box gold" data-medal="gold"><h4>🥇 EMAS · GOLD</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
                 <div class="medal-box silver" data-medal="silver"><h4>🥈 PERAK · SILVER</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
@@ -973,7 +978,7 @@ slideUploadZone.addEventListener('drop', e => {
 // ============================================================
 // 9. MEDAL SLIDE – click-to-pick boxes, auto layout on the flag template
 // ============================================================
-const picks = { gold:null, silver:null, bronze:null, bronze2:null };
+const picks = { sport:null, gold:null, silver:null, bronze:null, bronze2:null };
 const medalBoxes = document.getElementById('medalBoxes');
 const tieCheck = document.getElementById('tieCheck');
 const medalCanvas = document.getElementById('medalCanvas');
@@ -989,17 +994,18 @@ function loadLogo(src) {
 
 function buildBox(box) {
     const medal = box.dataset.medal, grid = box.querySelector('.logo-grid'), search = box.querySelector('input'), pickedEl = box.querySelector('.picked');
-    TEAMS.forEach(t => {
+    const LIST = medal === 'sport' ? SPORTS : TEAMS;   // sports carry .en instead of .short
+    LIST.forEach(t => {
         const el = document.createElement('div'); el.className = 'logo-item'; el.title = t.name; el.dataset.id = t.id;
-        el.innerHTML = `<img src="${t.logo}" alt=""><span>${t.short}</span>`;
+        el.innerHTML = `<img src="${t.logo}" alt=""><span>${t.short || t.name}</span>`;
         el.addEventListener('click', () => setPick(medal, t));
         grid.appendChild(el);
     });
     search.addEventListener('input', () => {
         const q = search.value.trim().toLowerCase();
         grid.querySelectorAll('.logo-item').forEach(el => {
-            const t = TEAMS.find(x => x.id === el.dataset.id);
-            el.classList.toggle('hidden', q && !(t.name.toLowerCase().includes(q) || t.short.toLowerCase().includes(q)));
+            const t = LIST.find(x => x.id === el.dataset.id);
+            el.classList.toggle('hidden', q && !(t.name.toLowerCase().includes(q) || (t.short || t.en).toLowerCase().includes(q)));
         });
     });
     search.addEventListener('keydown', e => { // Enter picks the only visible match
@@ -1012,18 +1018,18 @@ function buildBox(box) {
         const t = picks[medal];
         grid.querySelectorAll('.logo-item').forEach(el => el.classList.toggle('selected', !!t && el.dataset.id === t.id));
         pickedEl.classList.toggle('empty', !t);
-        pickedEl.innerHTML = t ? `<img src="${t.logo}" alt="">${t.name}<button class="clear-pick" title="Clear">✕</button>` : 'Not selected';
+        pickedEl.innerHTML = t ? `<img src="${t.logo}" alt="">${t.name}${t.en ? ' · ' + t.en : ''}<button class="clear-pick" title="Clear">✕</button>` : 'Not selected';
     };
 }
 function setPick(medal, team) {
     picks[medal] = team;
-    medalBoxes.querySelector(`[data-medal="${medal}"]`)._refresh();
+    document.querySelector(`.medal-box[data-medal="${medal}"]`)._refresh();
     medalShowBtn.disabled = !(picks.gold || picks.silver || picks.bronze);
     medalAnthemBtn.disabled = !picks.gold;
     medalAnthemBtn.textContent = picks.gold ? `▶ Lagu Juara · ${picks.gold.anthem ? picks.gold.short : 'LAGU SUKIPT'}` : '▶ Lagu Juara';
     drawMedalSlide();
 }
-medalBoxes.querySelectorAll('.medal-box').forEach(buildBox);
+document.querySelectorAll('.medal-box').forEach(buildBox);
 tieCheck.addEventListener('change', () => {
     medalBoxes.classList.toggle('tie', tieCheck.checked);
     medalBoxes.querySelector('.bronze2').classList.toggle('on', tieCheck.checked);
@@ -1040,11 +1046,12 @@ async function drawMedalSlide() {
         const img = await loadLogo(t.logo); if (!img) continue;
         Medal.drawContained(ctx, img, ...rects[m], 0.12);
     }
+    if (picks.sport) Medal.drawSport(ctx, await loadLogo(picks.sport.logo), picks.sport.name);
 }
 medalShowBtn.addEventListener('click', async () => {
     await drawMedalSlide();
     const logos = {}; for (const m in picks) if (picks[m]) logos[m] = picks[m].logo;
-    sendCommand({ action: 'medalSlide', logos, tie: tieCheck.checked });   // projector renders (and animates) from the file paths
+    sendCommand({ action: 'medalSlide', logos, tie: tieCheck.checked, sport: picks.sport ? { logo: picks.sport.logo, name: picks.sport.name } : null });   // projector renders (and animates) from the file paths
     try {   // keep a static copy in the Slides list for replay; on file:// the canvas is tainted and toDataURL throws — fine, skip it
         slides.push(medalCanvas.toDataURL('image/png'));
         currentSlideIndex = slides.length - 1;
@@ -1061,7 +1068,7 @@ medalAnthemBtn.addEventListener('click', () => {
 });
 document.getElementById('medalClearBtn').addEventListener('click', () => {
     for (const m in picks) setPick(m, null);
-    medalBoxes.querySelectorAll('input[type=search]').forEach(i => { i.value = ''; i.dispatchEvent(new Event('input')); });
+    document.querySelectorAll('.medal-box input[type=search]').forEach(i => { i.value = ''; i.dispatchEvent(new Event('input')); });
 });
 // ============================================================
 // 10. TAB SWITCHING
