@@ -20,3 +20,6 @@ Every shown medal slide is also kept in the Slides tab (←/→ to step through,
 ## Files
 - `teams.js` — the 64 registered institutions: `id` (from online.sukipt.com.my), `name`, `short` (search code), `logo` (in `LogoIPT/`), `anthem` (in `music/Lagu Universiti/`, `null` = use LAGU SUKIPT). Edit this to add or rename an institution.
 - `Template Majlis Sukipt.png` — the three-flag background. The four-flag tie layout is synthesised from it; to use a hand-made 4-flag template, add the file and set `TEMPLATE4` in `presenter.html`.
+
+## Hosted version (GitHub Pages)
+Both pages ask for an access PIN once per browser (`gate.js`). Default PIN: `sukipt2026` — change it before going live: run `printf 'NEWPIN' | shasum -a 256` and paste the hash into `gate.js`. This keeps casual visitors out; it is not strong security (static hosting has no server-side login).
