@@ -15,8 +15,9 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>" />
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="teams.js"></script>
     <style>
-        /* ===== All your existing styles (unchanged) ===== */
+        /* ===== ALL STYLES (unchanged – exactly as before) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --um-blue: #0033a0; --um-blue-light: #0066cc;
@@ -404,6 +405,38 @@
             .upload-zone-text { font-size:0.9rem; }
             .tab-btn { font-size:0.75rem; padding:6px 12px; letter-spacing:0px; }
         }
+
+        /* MEDAL SLIDE */
+        .medal-boxes { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+        .medal-box { border-radius:16px; padding:12px; border:3px solid; background:#fff; display:flex; flex-direction:column; min-height:300px; }
+        .medal-box.gold   { border-color:#e6b800; background:linear-gradient(#fffbe6,#fff); }
+        .medal-box.silver { border-color:#9aa3ad; background:linear-gradient(#f3f5f7,#fff); }
+        .medal-box.bronze { border-color:#b87333; background:linear-gradient(#fbf0e6,#fff); }
+        .medal-box h4 { font-family:'Bangers','Impact',cursive; letter-spacing:2px; font-size:1.4rem; color:#1a1a1a; }
+        .medal-box .picked { min-height:2.4em; font-family:'Oswald',sans-serif; font-weight:700; font-size:0.95rem; color:var(--um-blue); margin:4px 0 8px; display:flex; align-items:center; gap:8px; }
+        .medal-box .picked img { height:2.2em; width:2.2em; object-fit:contain; }
+        .medal-box .picked.empty { color:#999; font-weight:400; }
+        .medal-box input[type=search] { width:100%; padding:10px 12px; border:2px solid #cbd5e1; border-radius:10px; font:400 1rem 'Oswald',sans-serif; margin-bottom:8px; }
+        .medal-box input[type=search]:focus { outline:none; border-color:var(--um-blue); }
+        .medal-box .logo-grid { max-height:260px; overflow-y:auto; gap:6px; align-content:flex-start; }
+        .medal-box .logo-item { width:72px; height:84px; flex-direction:column; border:2px solid transparent; border-radius:8px; padding:4px; background:#fff; }
+        .medal-box .logo-item img { height:52px; }
+        .medal-box .logo-item span { font:600 0.65rem/1.1 'Oswald',sans-serif; text-align:center; color:#334155; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; }
+        .medal-box .logo-item.selected { border-color:var(--um-blue); background:#e8f0ff; }
+        .medal-box .logo-item.hidden { display:none; }
+        .medal-box .clear-pick { margin-left:auto; border:none; background:none; color:#94a3b8; cursor:pointer; font-size:1.1rem; }
+        .tie-row { margin:12px 0; font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:1px; display:flex; align-items:center; gap:8px; }
+        .tie-row input { width:20px; height:20px; accent-color:#b87333; }
+        .medal-box.bronze2:not(.on) { display:none; }
+        .medal-boxes.tie { grid-template-columns:repeat(4,1fr); }
+        .medal-preview { background:#0f172a; border-radius:16px; padding:12px; margin-top:16px; text-align:center; }
+        .medal-preview canvas { max-width:100%; height:auto; border-radius:8px; background:#fff; }
+        .medal-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+        .medal-actions .btn { flex:1 1 200px; font-size:1.15rem; padding:16px; }
+        .medal-actions .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+        .btn-show { background:linear-gradient(135deg,#2d3748,#1a202c); box-shadow:0 4px 0 #0d1117, var(--shadow-sm); }
+        .btn-anthem { background:linear-gradient(135deg,var(--um-gold),var(--um-gold-dark)); color:var(--um-black); box-shadow:0 4px 0 #b8960f, var(--shadow-sm); }
+        @media (max-width:900px) { .medal-boxes, .medal-boxes.tie { grid-template-columns:1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -417,13 +450,34 @@
 
     <!-- TABS -->
     <div class="tab-nav">
-        <button class="tab-btn active" id="tabMain">🎧 Main Control</button>
+        <button class="tab-btn" id="tabMedal">🏅 Medal Slide</button>
+        <button class="tab-btn" id="tabMain">🎧 Main Control</button>
         <button class="tab-btn" id="tabContingent">🏳️ University Songs (41)</button>
         <button class="tab-btn" id="tabSlides">🖼️ Slides</button>
     </div>
 
+    <!-- ======= TAB 0: MEDAL SLIDE ======= -->
+    <div id="medalTabContent" class="tab-content active">
+        <div class="section">
+            <div class="section-title editor-title">🏅 Medal Slide</div>
+            <div class="section-sub">1 · Click the winning university in each box (type to search). &nbsp;2 · Show on projector. &nbsp;3 · Play the champion's anthem.</div>
+            <div class="medal-boxes" id="medalBoxes">
+                <div class="medal-box gold" data-medal="gold"><h4>🥇 EMAS · GOLD</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
+                <div class="medal-box silver" data-medal="silver"><h4>🥈 PERAK · SILVER</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
+                <div class="medal-box bronze" data-medal="bronze"><h4>🥉 GANGSA · BRONZE</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
+                <div class="medal-box bronze bronze2" data-medal="bronze2"><h4>🥉 GANGSA · BRONZE 2</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
+            </div>
+            <label class="tie-row"><input type="checkbox" id="tieCheck"> Two bronze medals (tie)</label>
+            <div class="medal-preview"><canvas id="medalCanvas" width="1920" height="1080"></canvas></div>
+            <div class="medal-actions">
+                <button class="btn btn-show" id="medalShowBtn" disabled>📺 Show on projector</button>
+                <button class="btn btn-anthem" id="medalAnthemBtn" disabled>▶ Lagu Juara</button>
+                <button class="btn btn-editor" id="medalClearBtn">🧹 Clear all</button>
+            </div>
+        </div>
+    </div>
     <!-- ======= TAB 1: MAIN CONTROL ======= -->
-    <div id="mainTabContent" class="tab-content active">
+    <div id="mainTabContent" class="tab-content">
         <div class="section">
             <div class="section-title flag-title">🚩 Flag Song</div>
             <div class="btn-grid">
@@ -478,28 +532,7 @@
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title editor-title">🖌️ Slide Editor</div>
-            <div class="section-sub">Click a logo to add it, drag to move, drag the blue dot to resize.</div>
-
-            <div class="editor-layout">
-                <div class="logo-panel">
-                    <h4>📋 University Logos (64)</h4>
-                    <div class="logo-grid" id="logoGrid">
-                        <div style="color:#94a3b8; font-size:0.8rem; width:100%; text-align:center;">Loading logos...</div>
-                    </div>
-                </div>
-                <div class="template-wrapper">
-                    <div class="template-container" id="templateContainer"></div>
-                    <div class="editor-buttons">
-                        <button class="btn btn-editor" id="clearTemplateBtn">🧹 Clear</button>
-                        <button class="btn btn-editor" id="saveTemplateBtn">💾 Save as Slide</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-
     <!-- ======= ALWAYS-VISIBLE PROGRESS & CONTROLS ======= -->
     <div class="fixed-controls">
         <div class="progress-container">
@@ -937,212 +970,137 @@ slideUploadZone.addEventListener('drop', e => {
 });
 
 // ============================================================
-// 9. SLIDE EDITOR – PRE-LOAD LOGOS & TEMPLATE IMAGE
-//    With RESIZE + HIGH QUALITY + NO AUTO-JUMP ON SAVE
+// 9. MEDAL SLIDE – click-to-pick boxes, auto layout on the flag template
 // ============================================================
-const logoGrid = document.getElementById('logoGrid');
-const templateContainer = document.getElementById('templateContainer');
-let templateLogos = [];
+// Flag cloth rectangles measured on the 960x540 template (x0,y0,x1,y1); canvas is 2x.
+const FLAG3 = { silver:[45,195,300,355], gold:[335,140,600,300], bronze:[628,218,895,385] };
+// One flag sprite (middle flag incl. rod + strings) cropped from the template, used for the 4-flag tie layout.
+const SPRITE = { x:326, y:0, w:286, h:318, cloth:[9,140,274,300] };
+// ponytail: 4-flag layout is synthesised from the 3-flag template; drop in "Template Majlis Sukipt 4.png" and set TEMPLATE4 to use a real one.
+const TEMPLATE4 = null;
+const TIE_SLOTS = [ ['silver',25,205,110], ['gold',238,250,50], ['bronze',496,205,140], ['bronze2',709,205,140] ]; // [medal, x, width, rod drop] in 960 space
 
-// Set template background
-const templateUrl = encodeURI(TEMPLATE_IMAGE);
-templateContainer.style.backgroundImage = `url('${templateUrl}')`;
-templateContainer.style.backgroundColor = '#ffffff';
-
-// Load all logos from LogoIPT folder
-function loadLogos() {
-    logoGrid.innerHTML = '';
-    LOGO_FILES.forEach((filename) => {
-        const logoPath = `LogoIPT/${filename}`;
-        const div = document.createElement('div');
-        div.className = 'logo-item';
-        div.innerHTML = `<img src="${logoPath}" alt="${filename}" />`;
-        div.addEventListener('click', () => {
-            fetch(logoPath)
-                .then(res => res.blob())
-                .then(blob => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        addLogoToTemplate(e.target.result);
-                    };
-                    reader.readAsDataURL(blob);
-                })
-                .catch(err => console.warn('Failed to load logo:', logoPath, err));
-        });
-        logoGrid.appendChild(div);
-    });
+const picks = { gold:null, silver:null, bronze:null, bronze2:null };
+const medalBoxes = document.getElementById('medalBoxes');
+const tieCheck = document.getElementById('tieCheck');
+const medalCanvas = document.getElementById('medalCanvas');
+const medalShowBtn = document.getElementById('medalShowBtn');
+const medalAnthemBtn = document.getElementById('medalAnthemBtn');
+const templateImg = new Image(); templateImg.src = TEMPLATE_IMAGE;
+templateImg.onload = drawMedalSlide;
+const logoCache = {};
+function loadLogo(src) {
+    if (!logoCache[src]) logoCache[src] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+    return logoCache[src];
 }
 
-// Add logo to template with resize capability and high-res sizing
-function addLogoToTemplate(dataURL) {
-    const initialSize = 80;
-
-    const logoEl = document.createElement('div');
-    logoEl.className = 'template-logo';
-    logoEl.style.left = '50%';
-    logoEl.style.top = '50%';
-    logoEl.style.transform = 'translate(-50%, -50%)';
-    logoEl.style.width = initialSize + 'px';
-    logoEl.style.height = initialSize + 'px';
-    logoEl.innerHTML = `
-        <img src="${dataURL}" alt="logo" />
-        <div class="resize-handle"></div>
-    `;
-
-    const entry = {
-        dataURL,
-        x: 50,
-        y: 50,
-        width: initialSize,
-        height: initialSize,
-        element: logoEl
+function buildBox(box) {
+    const medal = box.dataset.medal, grid = box.querySelector('.logo-grid'), search = box.querySelector('input'), pickedEl = box.querySelector('.picked');
+    TEAMS.forEach(t => {
+        const el = document.createElement('div'); el.className = 'logo-item'; el.title = t.name; el.dataset.id = t.id;
+        el.innerHTML = `<img src="${t.logo}" alt=""><span>${t.short}</span>`;
+        el.addEventListener('click', () => setPick(medal, t));
+        grid.appendChild(el);
+    });
+    search.addEventListener('input', () => {
+        const q = search.value.trim().toLowerCase();
+        grid.querySelectorAll('.logo-item').forEach(el => {
+            const t = TEAMS.find(x => x.id === el.dataset.id);
+            el.classList.toggle('hidden', q && !(t.name.toLowerCase().includes(q) || t.short.toLowerCase().includes(q)));
+        });
+    });
+    search.addEventListener('keydown', e => { // Enter picks the only visible match
+        if (e.key !== 'Enter') return;
+        const vis = [...grid.querySelectorAll('.logo-item:not(.hidden)')];
+        if (vis.length === 1) vis[0].click();
+    });
+    box.querySelector('.picked').addEventListener('click', e => { if (e.target.classList.contains('clear-pick')) setPick(medal, null); });
+    box._refresh = () => {
+        const t = picks[medal];
+        grid.querySelectorAll('.logo-item').forEach(el => el.classList.toggle('selected', !!t && el.dataset.id === t.id));
+        pickedEl.classList.toggle('empty', !t);
+        pickedEl.innerHTML = t ? `<img src="${t.logo}" alt="">${t.name}<button class="clear-pick" title="Clear">✕</button>` : 'Not selected';
     };
-    templateLogos.push(entry);
-    templateContainer.appendChild(logoEl);
-
-    enableDrag(logoEl, entry);
-    enableResize(logoEl, entry);
 }
-
-function enableDrag(element, entry) {
-    let isDragging = false;
-    let startX, startY, origX, origY;
-
-    element.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('resize-handle')) return;
-        e.preventDefault();
-        const rect = templateContainer.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        origX = entry.x;
-        origY = entry.y;
-        isDragging = true;
-        element.classList.add('dragging');
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-    });
-
-    function onMove(e) {
-        if (!isDragging) return;
-        const rect = templateContainer.getBoundingClientRect();
-        const dx = (e.clientX - startX) / rect.width * 100;
-        const dy = (e.clientY - startY) / rect.height * 100;
-        let newX = Math.min(100, Math.max(0, origX + dx));
-        let newY = Math.min(100, Math.max(0, origY + dy));
-        entry.x = newX;
-        entry.y = newY;
-        element.style.left = newX + '%';
-        element.style.top = newY + '%';
-        element.style.transform = 'translate(-50%, -50%)';
-    }
-
-    function onUp() {
-        isDragging = false;
-        element.classList.remove('dragging');
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-    }
+function setPick(medal, team) {
+    picks[medal] = team;
+    medalBoxes.querySelector(`[data-medal="${medal}"]`)._refresh();
+    medalShowBtn.disabled = !(picks.gold || picks.silver || picks.bronze);
+    medalAnthemBtn.disabled = !picks.gold;
+    medalAnthemBtn.textContent = picks.gold ? `▶ Lagu Juara · ${picks.gold.anthem ? picks.gold.short : 'LAGU SUKIPT'}` : '▶ Lagu Juara';
+    drawMedalSlide();
 }
-
-function enableResize(element, entry) {
-    const handle = element.querySelector('.resize-handle');
-    if (!handle) return;
-
-    let isResizing = false;
-    let startX, startY, origWidth, origHeight;
-
-    handle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        isResizing = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        origWidth = entry.width;
-        origHeight = entry.height;
-        document.addEventListener('mousemove', onResizeMove);
-        document.addEventListener('mouseup', onResizeUp);
-    });
-
-    function onResizeMove(e) {
-        if (!isResizing) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        let newW = Math.max(30, origWidth + dx);
-        let newH = Math.max(30, origHeight + dy);
-        entry.width = newW;
-        entry.height = newH;
-        element.style.width = newW + 'px';
-        element.style.height = newH + 'px';
-    }
-
-    function onResizeUp() {
-        isResizing = false;
-        document.removeEventListener('mousemove', onResizeMove);
-        document.removeEventListener('mouseup', onResizeUp);
-    }
-}
-
-document.getElementById('clearTemplateBtn').addEventListener('click', () => {
-    templateLogos.forEach(entry => {
-        if (entry.element.parentNode) entry.element.remove();
-    });
-    templateLogos = [];
+medalBoxes.querySelectorAll('.medal-box').forEach(buildBox);
+tieCheck.addEventListener('change', () => {
+    medalBoxes.classList.toggle('tie', tieCheck.checked);
+    medalBoxes.querySelector('.bronze2').classList.toggle('on', tieCheck.checked);
+    if (!tieCheck.checked) setPick('bronze2', null); else drawMedalSlide();
 });
 
-// ========== FIXED SAVE: fixed size before capture ==========
-document.getElementById('saveTemplateBtn').addEventListener('click', async () => {
-    const container = templateContainer;
-    // Store original inline styles
-    const origWidth = container.style.width;
-    const origHeight = container.style.height;
-    const origAspect = container.style.aspectRatio;
-
-    try {
-        // Force a fixed 16:9 size for capture (960x540, then scale 2x => 1920x1080)
-        container.style.width = '960px';
-        container.style.height = '540px';
-        container.style.aspectRatio = 'auto';
-
-        // Wait a tick for layout to settle
-        await new Promise(r => requestAnimationFrame(r));
-
-        const canvas = await html2canvas(container, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            allowTaint: false,
-            logging: false,
-            width: 960,
-            height: 540
-        });
-
-        const dataURL = canvas.toDataURL('image/png');
-        slides.push(dataURL);
-        renderSlideThumbnails();
-        // Keep current slide selected – do NOT jump
-        statusEl.textContent = '✅ Template saved as slide #' + slides.length;
-        statusEl.style.opacity = '1';
-        setTimeout(() => { statusEl.style.opacity = '0.5'; }, 3000);
-    } catch (err) {
-        console.error('html2canvas error:', err);
-        statusEl.textContent = '❌ Failed to capture template. Check console.';
-    } finally {
-        // Restore original sizing
-        container.style.width = origWidth || '';
-        container.style.height = origHeight || '';
-        container.style.aspectRatio = origAspect || '16/9';
+function drawCover(ctx, img, W, H) {
+    const a = img.width / img.height, ca = W / H;
+    let sx = 0, sy = 0, sw = img.width, sh = img.height;
+    if (a > ca) { sw = img.height * ca; sx = (img.width - sw) / 2; } else { sh = img.width / ca; sy = (img.height - sh) / 2; }
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+}
+function drawContained(ctx, img, x0, y0, x1, y1, inset) {
+    const w = (x1 - x0) * (1 - 2 * inset), h = (y1 - y0) * (1 - 2 * inset);
+    const s = Math.min(w / img.width, h / img.height), dw = img.width * s, dh = img.height * s;
+    ctx.drawImage(img, (x0 + x1) / 2 - dw / 2, (y0 + y1) / 2 - dh / 2, dw, dh);
+}
+async function drawMedalSlide() {
+    if (!templateImg.complete || !templateImg.naturalWidth) return;
+    const ctx = medalCanvas.getContext('2d'), K = 2; // 960x540 template space → 1920x1080
+    ctx.clearRect(0, 0, 1920, 1080);
+    drawCover(ctx, templateImg, 1920, 1080);
+    const tie = tieCheck.checked;
+    const rects = {};
+    if (!tie) {
+        for (const m in FLAG3) rects[m] = FLAG3[m].map(v => v * K);
+    } else {
+        // white out the three template flags, then lay four sprites
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 885 * K, 400 * K); ctx.fillRect(885 * K, 140 * K, 30 * K, 260 * K);
+        for (const [m, x, w, drop] of TIE_SLOTS) {
+            const sc = w / SPRITE.w, STR = 100; // top 100 rows of the sprite are strings only → stretch them to bridge the drop
+            ctx.drawImage(templateImg, SPRITE.x, SPRITE.y, SPRITE.w, STR, x * K, 0, w * K, (drop + STR * sc) * K);
+            ctx.drawImage(templateImg, SPRITE.x, SPRITE.y, SPRITE.w, SPRITE.h, x * K, drop * K, w * K, SPRITE.h * sc * K);
+            const [cx0, cy0, cx1, cy1] = SPRITE.cloth;
+            rects[m] = [x + cx0 * sc, drop + cy0 * sc, x + cx1 * sc, drop + cy1 * sc].map(v => v * K);
+        }
     }
+    for (const m in rects) {
+        const t = picks[m]; if (!t) continue;
+        const img = await loadLogo(t.logo); if (!img) continue;
+        drawContained(ctx, img, ...rects[m], 0.12);
+    }
+}
+medalShowBtn.addEventListener('click', async () => {
+    await drawMedalSlide();
+    slides.push(medalCanvas.toDataURL('image/png'));
+    renderSlideThumbnails();
+    goToSlide(slides.length - 1);
+    statusEl.textContent = '📺 Medal slide shown (slide #' + slides.length + ')';
 });
-
+medalAnthemBtn.addEventListener('click', () => {
+    const t = picks.gold; if (!t) return;
+    if (t.anthem) sendCommand({ action: 'playContingent', url: './' + t.anthem });
+    else sendCommand({ action: 'toggleFlag' });
+});
+document.getElementById('medalClearBtn').addEventListener('click', () => {
+    for (const m in picks) setPick(m, null);
+    medalBoxes.querySelectorAll('input[type=search]').forEach(i => { i.value = ''; i.dispatchEvent(new Event('input')); });
+});
 // ============================================================
 // 10. TAB SWITCHING
 // ============================================================
 const tabs = {
+    medal: document.getElementById('tabMedal'),
     main: document.getElementById('tabMain'),
     contingent: document.getElementById('tabContingent'),
     slides: document.getElementById('tabSlides')
 };
 const contents = {
+    medal: document.getElementById('medalTabContent'),
     main: document.getElementById('mainTabContent'),
     contingent: document.getElementById('contingentTabContent'),
     slides: document.getElementById('slidesTabContent')
@@ -1154,6 +1112,7 @@ function switchTab(name) {
         contents[k].classList.toggle('active', k === name);
     });
 }
+tabs.medal.addEventListener('click', () => switchTab('medal'));
 tabs.main.addEventListener('click', () => switchTab('main'));
 tabs.contingent.addEventListener('click', () => switchTab('contingent'));
 tabs.slides.addEventListener('click', () => switchTab('slides'));
@@ -1162,6 +1121,7 @@ tabs.slides.addEventListener('click', () => switchTab('slides'));
 // 11. KEYBOARD SHORTCUTS
 // ============================================================
 document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
     if (e.key === ' ' || e.key === 'Space') {
         e.preventDefault();
         sendCommand({ action: 'togglePlayPause' });
@@ -1180,7 +1140,6 @@ document.addEventListener('keydown', (e) => {
 // 12. INIT – load logos & check files
 // ============================================================
 console.log('🎤 Presenter Cockpit loading...');
-loadLogos();
 checkAllFiles();
 
 console.log('✅ Ready.');
