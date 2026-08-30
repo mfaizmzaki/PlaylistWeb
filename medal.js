@@ -59,8 +59,9 @@
     const [x0, y0] = rect, H = cloth.height, step = 3;
     for (let y = 0; y < H; y += step) {
       const p = y / H;
-      const dx = (10 * Math.sin(y / 38 - t * 2.4 + phase) + 4 * Math.sin(y / 11 + t * 3.1 + phase)) * p * p;
-      const dy = 2 * Math.sin(y / 30 - t * 2.0 + phase) * p;
+      // ponytail: amplitude/speed tuned by eye for "just a feel"; raise the 4 / 1.5 for a windier flag
+      const dx = (4 * Math.sin(y / 48 - t * 1.6 + phase) + 1.5 * Math.sin(y / 14 + t * 2.2 + phase)) * p * p;
+      const dy = 1 * Math.sin(y / 36 - t * 1.4 + phase) * p;
       ctx.drawImage(cloth, 0, y, cloth.width, step + 1, x0 - 6 + dx, y0 - 6 + y + dy, cloth.width, step + 1); // +1 overlap hides seams
     }
   }
