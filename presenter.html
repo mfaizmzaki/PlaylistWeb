@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="teams.js"></script>
+    <script src="medal.js"></script>
     <style>
         /* ===== ALL STYLES (unchanged – exactly as before) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -972,14 +973,6 @@ slideUploadZone.addEventListener('drop', e => {
 // ============================================================
 // 9. MEDAL SLIDE – click-to-pick boxes, auto layout on the flag template
 // ============================================================
-// Flag cloth rectangles measured on the 960x540 template (x0,y0,x1,y1); canvas is 2x.
-const FLAG3 = { silver:[45,195,300,355], gold:[335,140,600,300], bronze:[628,218,895,385] };
-// One flag sprite (middle flag incl. rod + strings) cropped from the template, used for the 4-flag tie layout.
-const SPRITE = { x:326, y:0, w:286, h:318, cloth:[9,140,274,300] };
-// ponytail: 4-flag layout is synthesised from the 3-flag template; drop in "Template Majlis Sukipt 4.png" and set TEMPLATE4 to use a real one.
-const TEMPLATE4 = null;
-const TIE_SLOTS = [ ['silver',25,205,110], ['gold',238,250,50], ['bronze',496,205,140], ['bronze2',709,205,140] ]; // [medal, x, width, rod drop] in 960 space
-
 const picks = { gold:null, silver:null, bronze:null, bronze2:null };
 const medalBoxes = document.getElementById('medalBoxes');
 const tieCheck = document.getElementById('tieCheck');
@@ -1037,41 +1030,15 @@ tieCheck.addEventListener('change', () => {
     if (!tieCheck.checked) setPick('bronze2', null); else drawMedalSlide();
 });
 
-function drawCover(ctx, img, W, H) {
-    const a = img.width / img.height, ca = W / H;
-    let sx = 0, sy = 0, sw = img.width, sh = img.height;
-    if (a > ca) { sw = img.height * ca; sx = (img.width - sw) / 2; } else { sh = img.width / ca; sy = (img.height - sh) / 2; }
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
-}
-function drawContained(ctx, img, x0, y0, x1, y1, inset) {
-    const w = (x1 - x0) * (1 - 2 * inset), h = (y1 - y0) * (1 - 2 * inset);
-    const s = Math.min(w / img.width, h / img.height), dw = img.width * s, dh = img.height * s;
-    ctx.drawImage(img, (x0 + x1) / 2 - dw / 2, (y0 + y1) / 2 - dh / 2, dw, dh);
-}
 async function drawMedalSlide() {
     if (!templateImg.complete || !templateImg.naturalWidth) return;
-    const ctx = medalCanvas.getContext('2d'), K = 2; // 960x540 template space → 1920x1080
+    const ctx = medalCanvas.getContext('2d');
     ctx.clearRect(0, 0, 1920, 1080);
-    drawCover(ctx, templateImg, 1920, 1080);
-    const tie = tieCheck.checked;
-    const rects = {};
-    if (!tie) {
-        for (const m in FLAG3) rects[m] = FLAG3[m].map(v => v * K);
-    } else {
-        // white out the three template flags, then lay four sprites
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 885 * K, 400 * K); ctx.fillRect(885 * K, 140 * K, 30 * K, 260 * K);
-        for (const [m, x, w, drop] of TIE_SLOTS) {
-            const sc = w / SPRITE.w, STR = 100; // top 100 rows of the sprite are strings only → stretch them to bridge the drop
-            ctx.drawImage(templateImg, SPRITE.x, SPRITE.y, SPRITE.w, STR, x * K, 0, w * K, (drop + STR * sc) * K);
-            ctx.drawImage(templateImg, SPRITE.x, SPRITE.y, SPRITE.w, SPRITE.h, x * K, drop * K, w * K, SPRITE.h * sc * K);
-            const [cx0, cy0, cx1, cy1] = SPRITE.cloth;
-            rects[m] = [x + cx0 * sc, drop + cy0 * sc, x + cx1 * sc, drop + cy1 * sc].map(v => v * K);
-        }
-    }
+    const rects = Medal.drawBase(ctx, templateImg, tieCheck.checked);
     for (const m in rects) {
         const t = picks[m]; if (!t) continue;
         const img = await loadLogo(t.logo); if (!img) continue;
-        drawContained(ctx, img, ...rects[m], 0.12);
+        Medal.drawContained(ctx, img, ...rects[m], 0.12);
     }
 }
 medalShowBtn.addEventListener('click', async () => {
@@ -1079,6 +1046,8 @@ medalShowBtn.addEventListener('click', async () => {
     slides.push(medalCanvas.toDataURL('image/png'));
     renderSlideThumbnails();
     goToSlide(slides.length - 1);
+    const logos = {}; for (const m in picks) if (picks[m]) logos[m] = picks[m].logo;
+    sendCommand({ action: 'medalSlide', logos, tie: tieCheck.checked });   // projector animates the flags
     statusEl.textContent = '📺 Medal slide shown (slide #' + slides.length + ')';
 });
 medalAnthemBtn.addEventListener('click', () => {

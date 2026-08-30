@@ -5,7 +5,7 @@ Two browser tabs on the venue laptop, synced automatically:
 | Tab | Where | What |
 |---|---|---|
 | `public.html` | drag to the projector/HDMI screen, press F11 | shows the slide, plays all audio. **Click it once** to enable audio. |
-| `presenter3.html` | laptop screen | the officer's controls |
+| `presenter.html` | laptop screen | the officer's controls |
 
 Open both from the same folder (double-click works; if a browser blocks local files, run `python -m http.server` in this folder and open `http://localhost:8000/…`).
 
@@ -19,4 +19,4 @@ Every shown medal slide is also kept in the Slides tab (←/→ to step through,
 
 ## Files
 - `teams.js` — the 64 registered institutions: `id` (from online.sukipt.com.my), `name`, `short` (search code), `logo` (in `LogoIPT/`), `anthem` (in `music/Lagu Universiti/`, `null` = use LAGU SUKIPT). Edit this to add or rename an institution.
-- `Template Majlis Sukipt.png` — the three-flag background. The four-flag tie layout is synthesised from it; to use a hand-made 4-flag template, add the file and set `TEMPLATE4` in `presenter3.html`.
+- `Template Majlis Sukipt.png` — the three-flag background. The four-flag tie layout is synthesised from it; to use a hand-made 4-flag template, add the file and set `TEMPLATE4` in `presenter.html`.

@@ -120,7 +120,9 @@
     <!-- SLIDE DISPLAY – PURE FULLSCREEN -->
     <div id="slide-display">
         <img id="public-slide" src="" alt="Current slide" />
+        <canvas id="medal-canvas" width="1920" height="1080" style="display:none;width:100%;height:100%;object-fit:contain"></canvas>
     </div>
+    <script src="medal.js"></script>
 
     <!-- ERROR TOAST (shows if a song fails to load) -->
     <div id="error-toast"></div>
@@ -569,8 +571,13 @@
                     }
                     break;
                 }
+                case 'medalSlide': {
+                    showMedalSlide(data.logos, data.tie);
+                    break;
+                }
                 case 'navigateSlide': {
                     const { index, dataURL } = data;
+                    stopMedalSlide();
                     slideImg.src = dataURL;
                     document.title = `📺 Slide ${index+1}`;
                     break;
@@ -579,6 +586,41 @@
                     console.warn('Unknown command:', action);
             }
         };
+
+        // ============================================================
+        // 9b. ANIMATED MEDAL SLIDE (flags waving)
+        // ============================================================
+        const medalCanvas = document.getElementById('medal-canvas');
+        const medalTpl = new Image(); medalTpl.src = 'Template Majlis Sukipt.png';
+        let medalAnim = null;
+        const loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+        async function showMedalSlide(logos, tie) {
+            if (!medalTpl.complete) await new Promise(r => medalTpl.onload = r);
+            stopMedalSlide();
+            const ctx = medalCanvas.getContext('2d');
+            const base = document.createElement('canvas'); base.width = 1920; base.height = 1080;
+            const rects = Medal.drawBase(base.getContext('2d'), medalTpl, tie, { eraseCloth: true });
+            const cloths = [];
+            let i = 0;
+            for (const m in rects) {
+                const logo = logos[m] ? await loadImg(logos[m]) : null;
+                cloths.push({ rect: rects[m], cloth: Medal.makeCloth(medalTpl, tie, rects[m], logo), phase: i++ * 1.7 });
+            }
+            slideImg.style.display = 'none'; medalCanvas.style.display = 'block';
+            const t0 = performance.now();
+            const frame = now => {
+                const t = (now - t0) / 1000;
+                ctx.drawImage(base, 0, 0);
+                for (const c of cloths) Medal.drawWaving(ctx, c.cloth, c.rect, t, c.phase);
+                medalAnim = requestAnimationFrame(frame);
+            };
+            medalAnim = requestAnimationFrame(frame);
+            document.title = '📺 Medal slide';
+        }
+        function stopMedalSlide() {
+            if (medalAnim) cancelAnimationFrame(medalAnim); medalAnim = null;
+            medalCanvas.style.display = 'none'; slideImg.style.display = 'block';
+        }
 
         // ============================================================
         // 10. INIT
