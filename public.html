@@ -37,6 +37,7 @@
             border-radius: 0;
             box-shadow: none;
         }
+        #slide-display img[src=""] { display: none; }
         #slide-display img {
             width: 100%;
             height: 100%;
@@ -182,6 +183,25 @@
         // ============================================================
         let audioCtx = null;
         let masterGain = null;
+        // Opened by double-click (file://)? Web Audio treats the media as cross-origin and outputs SILENCE,
+        // so fade with the element's own volume instead. Same call shape as a GainNode so the engine is unchanged.
+        const FILE_MODE = location.protocol === 'file:';
+        let masterVol = 1;
+        function elementGain(el) {
+            let v = 0, raf = null;
+            const apply = () => { el.volume = Math.max(0, Math.min(1, v * masterVol)); };
+            const gain = {
+                get value() { return v; }, set value(x) { v = x; apply(); },
+                setValueAtTime(x) { cancelAnimationFrame(raf); v = x; apply(); },
+                linearRampToValueAtTime(x, endTime) {
+                    cancelAnimationFrame(raf);
+                    const dur = Math.max(10, (endTime - audioCtx.currentTime) * 1000), v0 = v, t0 = performance.now();
+                    const step = () => { const k = Math.min(1, (performance.now() - t0) / dur); v = v0 + (x - v0) * k; apply(); if (k < 1) raf = requestAnimationFrame(step); };
+                    raf = requestAnimationFrame(step);
+                }
+            };
+            return { gain };
+        }
         let currentSources = [];
         let activeAudioEl = null;
         let activeUrl = null;
@@ -291,11 +311,18 @@
                 }
             };
 
-            const source = audioCtx.createMediaElementSource(audioEl);
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            source.connect(gainNode);
-            gainNode.connect(masterGain);
+            let source, gainNode;
+            if (FILE_MODE) {
+                source = { disconnect() {} };
+                gainNode = elementGain(audioEl);
+                gainNode.gain.setValueAtTime(0);
+            } else {
+                source = audioCtx.createMediaElementSource(audioEl);
+                gainNode = audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                source.connect(gainNode);
+                gainNode.connect(masterGain);
+            }
 
             audioEl.play().catch(e => {
                 if (e.name !== 'AbortError') {
@@ -537,7 +564,11 @@
                     break;
                 }
                 case 'setVolume': {
-                    if (masterGain) {
+                    if (FILE_MODE) {
+                        masterVol = data.value;
+                        currentSources.forEach(s => { s.gain.gain.value = s.gain.gain.value; }); // re-apply
+                        channel.postMessage({ type: 'volume', value: data.value });
+                    } else if (masterGain) {
                         masterGain.gain.setValueAtTime(data.value, audioCtx.currentTime);
                         channel.postMessage({ type: 'volume', value: data.value });
                     }
@@ -619,7 +650,7 @@
         }
         function stopMedalSlide() {
             if (medalAnim) cancelAnimationFrame(medalAnim); medalAnim = null;
-            medalCanvas.style.display = 'none'; slideImg.style.display = 'block';
+            medalCanvas.style.display = 'none'; slideImg.style.display = '';
         }
 
         // ============================================================

@@ -7,7 +7,7 @@ Two browser tabs on the venue laptop, synced automatically:
 | `public.html` | drag to the projector/HDMI screen, press F11 | shows the slide, plays all audio. **Click it once** to enable audio. |
 | `presenter.html` | laptop screen | the officer's controls |
 
-Open both from the same folder (double-click works; if a browser blocks local files, run `python -m http.server` in this folder and open `http://localhost:8000/…`).
+Open both by double-clicking them from the same folder, in the same browser (Chrome or Edge). No server needed.
 
 ## Medal ceremony (🏅 Medal Slide tab — the landing tab)
 1. In each box — **EMAS / PERAK / GANGSA** — click the winning university. Type a name or short code in the box's search field to narrow the grid (Enter picks the only match). Tick **Two bronze medals** if there is a bronze tie; a fourth box and flag appear.
