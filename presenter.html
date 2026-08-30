@@ -1043,12 +1043,16 @@ async function drawMedalSlide() {
 }
 medalShowBtn.addEventListener('click', async () => {
     await drawMedalSlide();
-    slides.push(medalCanvas.toDataURL('image/png'));
-    renderSlideThumbnails();
-    goToSlide(slides.length - 1);
     const logos = {}; for (const m in picks) if (picks[m]) logos[m] = picks[m].logo;
-    sendCommand({ action: 'medalSlide', logos, tie: tieCheck.checked });   // projector animates the flags
-    statusEl.textContent = '📺 Medal slide shown (slide #' + slides.length + ')';
+    sendCommand({ action: 'medalSlide', logos, tie: tieCheck.checked });   // projector renders (and animates) from the file paths
+    try {   // keep a static copy in the Slides list for replay; on file:// the canvas is tainted and toDataURL throws — fine, skip it
+        slides.push(medalCanvas.toDataURL('image/png'));
+        currentSlideIndex = slides.length - 1;
+        renderSlideThumbnails();
+        slidePreviewImg.src = slides[currentSlideIndex];
+    } catch (e) {}
+    statusEl.textContent = '📺 Medal slide shown';
+    statusEl.style.opacity = '1';
 });
 medalAnthemBtn.addEventListener('click', () => {
     const t = picks.gold; if (!t) return;
