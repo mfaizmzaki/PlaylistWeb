@@ -634,6 +634,7 @@ async function checkFileExists(url) {
 }
 
 async function checkAllFiles() {
+    if (location.protocol === 'file:') return;   // fetch() is blocked on file:// — every probe would 'fail'; the projector reports a real missing file when it is played
     const allSongs = [FLAG_SONG, ...HOUSE_SONGS, ...CONTINGENT_SONGS];
     const allLogos = LOGO_FILES.map(f => `LogoIPT/${f}`);
     const allFiles = [...allSongs, ...allLogos, TEMPLATE_IMAGE];
