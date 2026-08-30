@@ -12,7 +12,7 @@ Open both by double-clicking them from the same folder, in the same browser (Chr
 ## Medal ceremony (🏅 Medal Slide tab — the landing tab)
 1. Click the **sport** (search by Malay or English name); it appears bottom-left of the slide.
 2. In each box — **EMAS / PERAK / GANGSA** — click the winning university. Type a name or short code in the box's search field to narrow the grid (Enter picks the only match). Tick **Two bronze medals** if there is a bronze tie; a fourth box and flag appear.
-3. Pick **Song when shown** — *Champion's anthem* (LAGU SUKIPT if that university has none on file), *LAGU SUKIPT*, or *None* — then **📺 Show on projector**: logos are placed on the flag template automatically, the slide goes live and the song starts.
+3. Pick **Song when shown** — *Champion's anthem* (LAGU SUKIPT if that university has none on file) or *LAGU SUKIPT* — then **📺 Show on projector**: logos are placed on the flag template automatically, the slide goes live and the song starts.
 4. **▶ Lagu Juara** — stops the anthem, or plays it again.
 5. **🖼️ Backdrop** when the ceremony is over — the projector returns to the SUKIPT backdrop (it also shows this on start-up).
 6. **🧹 Clear all** before the next event.
