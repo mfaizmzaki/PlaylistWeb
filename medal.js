@@ -67,11 +67,11 @@
 
   // Sport pictogram + name, lower-left (over the faint decorative arcs).
   function drawSport(ctx, img, name) {
-    if (img) drawContained(ctx, img, 40 * K, 372 * K, 250 * K, 492 * K, 0);
+    if (img) drawContained(ctx, img, 50 * K, 410 * K, 190 * K, 500 * K, 0);
     if (name) {
       ctx.save(); ctx.fillStyle = '#001f5b'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.font = 'bold ' + 22 * K + 'px Oswald, "Segoe UI", Arial, sans-serif';
-      ctx.fillText(name.toUpperCase(), 145 * K, 500 * K); ctx.restore();
+      ctx.font = 'bold ' + 17 * K + 'px Oswald, "Segoe UI", Arial, sans-serif';
+      ctx.fillText(name.toUpperCase(), 120 * K, 506 * K); ctx.restore();
     }
   }
 
