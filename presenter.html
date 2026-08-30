@@ -989,6 +989,7 @@ const medalShowBtn = document.getElementById('medalShowBtn');
 const medalAnthemBtn = document.getElementById('medalAnthemBtn');
 const templateImg = new Image(); templateImg.src = TEMPLATE_IMAGE;
 templateImg.onload = drawMedalSlide;
+Medal.logo.addEventListener('load', drawMedalSlide);
 const logoCache = {};
 function loadLogo(src) {
     if (!logoCache[src]) logoCache[src] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });

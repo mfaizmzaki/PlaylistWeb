@@ -628,6 +628,7 @@
         const loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
         async function showMedalSlide(logos, tie, sport) {
             if (!medalTpl.complete) await new Promise(r => medalTpl.onload = r);
+            if (!Medal.logo.complete) await new Promise(r => Medal.logo.onload = r);
             stopMedalSlide();
             const ctx = medalCanvas.getContext('2d');
             const base = document.createElement('canvas'); base.width = 1920; base.height = 1080;

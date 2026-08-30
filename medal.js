@@ -7,6 +7,9 @@
   // One flag (middle one, rod + strings) cropped from the template; used to synthesise the 4-flag tie layout.
   // ponytail: replace with a real 4-flag template later by drawing it in drawBase instead of these sprites.
   const SPRITE = { x:326, y:0, w:286, h:318, cloth:[9,140,274,300], strings:100 };
+  // Hi-res SUKIPT logo drawn over the template's baked-in (blurry) copy at the same spot.
+  const LOGO = new Image(); LOGO.src = 'sukipt-logo.png';
+  const LOGO_BOX = [590, 430, 932, 518];
   const TIE_SLOTS = [ ['silver',25,205,110], ['gold',238,250,50], ['bronze',496,205,140], ['bronze2',709,205,140] ]; // medal, x, width, rod drop
 
   // Draw the template (cover-fit) and, for a tie, four synthesised flags. Returns {medal: [x0,y0,x1,y1]} cloth rects in canvas px.
@@ -16,6 +19,11 @@
     let sx = 0, sy = 0, sw = tpl.width, sh = tpl.height;
     if (a > ca) { sw = tpl.height * ca; sx = (tpl.width - sw) / 2; } else { sh = tpl.width / ca; sy = (tpl.height - sh) / 2; }
     ctx.drawImage(tpl, sx, sy, sw, sh, 0, 0, W, H);
+    if (LOGO.complete && LOGO.naturalWidth) {
+      const [lx0, ly0, lx1, ly1] = LOGO_BOX.map(v => v * K);
+      ctx.fillStyle = '#fff'; ctx.fillRect(lx0 - 4, ly0 - 4, lx1 - lx0 + 8, ly1 - ly0 + 8);
+      drawContained(ctx, LOGO, lx0, ly0, lx1, ly1, 0);
+    }
     const rects = {};
     if (!tie) {
       for (const m in FLAG3) rects[m] = FLAG3[m].map(v => v * K);
@@ -76,5 +84,5 @@
     }
   }
 
-  window.Medal = { drawBase, drawContained, makeCloth, drawWaving, drawSport };
+  window.Medal = { drawBase, drawContained, makeCloth, drawWaving, drawSport, logo: LOGO };
 })();
