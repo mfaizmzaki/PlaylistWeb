@@ -425,6 +425,7 @@
         .medal-box .clear-pick { margin-left:auto; border:none; background:none; color:#94a3b8; cursor:pointer; font-size:1.1rem; }
         .tie-row { margin:12px 0; font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:1px; display:flex; align-items:center; gap:8px; }
         .tie-row input { width:20px; height:20px; accent-color:#b87333; }
+        .song-row { gap:18px; flex-wrap:wrap; } .song-row label { display:flex; align-items:center; gap:6px; font-weight:400; cursor:pointer; } .song-row input { accent-color:var(--um-blue); }
         .medal-box.bronze2:not(.on) { display:none; }
         .medal-boxes.tie { grid-template-columns:repeat(4,1fr); }
         .medal-preview { background:#0f172a; border-radius:16px; padding:12px; margin-top:16px; text-align:center; }
@@ -458,7 +459,7 @@
     <div id="medalTabContent" class="tab-content active">
         <div class="section">
             <div class="section-title editor-title">🏅 Medal Slide</div>
-            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Show on projector — the champion's anthem starts automatically (Lagu Juara stops / replays it). &nbsp;4 · Backdrop when done.</div>
+            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Choose the song, then Show on projector — it starts with the slide (Lagu Juara stops / replays the anthem). &nbsp;4 · Backdrop when done.</div>
             <div class="medal-box sport" data-medal="sport"><h4>🏟️ SUKAN · SPORT</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search sport…"><div class="logo-grid"></div></div>
             <div class="medal-boxes" id="medalBoxes">
                 <div class="medal-box gold" data-medal="gold"><h4>🥇 EMAS · GOLD</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
@@ -467,6 +468,11 @@
                 <div class="medal-box bronze bronze2" data-medal="bronze2"><h4>🥉 GANGSA · BRONZE 2</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
             </div>
             <label class="tie-row"><input type="checkbox" id="tieCheck"> Two bronze medals (tie)</label>
+            <div class="tie-row song-row">🎵 Song when shown:
+                <label><input type="radio" name="showSong" value="anthem" checked> Champion's anthem</label>
+                <label><input type="radio" name="showSong" value="sukipt"> LAGU SUKIPT</label>
+                <label><input type="radio" name="showSong" value="none"> None</label>
+            </div>
             <div class="medal-preview"><canvas id="medalCanvas" width="1920" height="1080"></canvas></div>
             <div class="medal-actions">
                 <button class="btn btn-show" id="medalShowBtn" disabled>📺 Show on projector</button>
@@ -1384,7 +1390,9 @@ medalShowBtn.addEventListener('click', async () => {
         renderSlideThumbnails();
         slidePreviewImg.src = slides[currentSlideIndex];
     } catch (e) {}
-    if (picks.gold) medalAnthemBtn.click();   // champion's anthem starts with the slide (button stays for stop / replay)
+    const song = document.querySelector('input[name=showSong]:checked').value;   // officer's choice, made before Show
+    if (song === 'anthem' && picks.gold) medalAnthemBtn.click();                  // champion's anthem (LAGU SUKIPT if none on file)
+    else if (song === 'sukipt' && !isPlaying(FLAG_SONG)) document.getElementById('flagBtn').click();
     statusEl.textContent = '📺 Medal slide shown';
     statusEl.style.opacity = '1';
 });
