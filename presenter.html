@@ -466,7 +466,7 @@
     <div id="medalTabContent" class="tab-content active">
         <div class="section">
             <div class="section-title editor-title">🏅 Medal Slide</div>
-            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Show on projector. &nbsp;4 · Play the champion's anthem.</div>
+            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Show on projector. &nbsp;4 · Play the champion's anthem. &nbsp;5 · Backdrop when done.</div>
             <div class="medal-box sport" data-medal="sport"><h4>🏟️ SUKAN · SPORT</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search sport…"><div class="logo-grid"></div></div>
             <div class="medal-boxes" id="medalBoxes">
                 <div class="medal-box gold" data-medal="gold"><h4>🥇 EMAS · GOLD</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
@@ -479,6 +479,7 @@
             <div class="medal-actions">
                 <button class="btn btn-show" id="medalShowBtn" disabled>📺 Show on projector</button>
                 <button class="btn btn-anthem" id="medalAnthemBtn" disabled>▶ Lagu Juara</button>
+                <button class="btn btn-show" id="backdropBtn">🖼️ Backdrop</button>
                 <button class="btn btn-editor" id="medalClearBtn">🧹 Clear all</button>
             </div>
         </div>
@@ -1042,6 +1043,10 @@ medalAnthemBtn.addEventListener('click', () => {
     const t = picks.gold; if (!t) return;
     if (t.anthem) sendCommand({ action: 'playContingent', url: './' + t.anthem });
     else sendCommand({ action: 'toggleFlag' });
+});
+document.getElementById('backdropBtn').addEventListener('click', () => {
+    sendCommand({ action: 'backdrop' });
+    statusEl.textContent = '🖼️ Backdrop shown';
 });
 document.getElementById('medalClearBtn').addEventListener('click', () => {
     for (const m in picks) setPick(m, null);

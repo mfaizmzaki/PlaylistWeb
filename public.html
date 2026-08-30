@@ -602,6 +602,12 @@
                     }
                     break;
                 }
+                case 'backdrop': {
+                    stopMedalSlide();
+                    slideImg.src = BACKDROP;
+                    document.title = '📺 Backdrop';
+                    break;
+                }
                 case 'medalSlide': {
                     showMedalSlide(data.logos, data.tie, data.sport);
                     break;
@@ -621,6 +627,8 @@
         // ============================================================
         // 9b. ANIMATED MEDAL SLIDE (flags waving)
         // ============================================================
+        const BACKDROP = 'Sukipt7 Main Backdrop.png';
+        slideImg.src = BACKDROP;   // idle screen before/after each ceremony
         const medalCanvas = document.getElementById('medal-canvas');
         const medalTpl = new Image(); medalTpl.src = 'Template Majlis Sukipt.png';
         let medalAnim = null;
