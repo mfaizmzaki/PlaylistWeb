@@ -29,7 +29,7 @@ When several events finish at once, you no longer have to wait for one anthem to
 
 Per row: **▶** show that one now (jump the order), **↑ ↓** reorder, **✎** load it back into the editor to correct it (this takes it out of the queue — ➕ Add to queue puts it back), **✕** remove. The row being shown is locked while it is live.
 
-**⏹ Stop queue** leaves the ceremonies in place so you can restart; **🧹 Clear queue** empties it. The queue is saved in the browser, so an accidental refresh mid-event does not lose it.
+**⏹ Stop** on the queue bar leaves the ceremonies in place so you can restart; **🧹 Clear queue** empties it. The queue is saved in the browser, so an accidental refresh mid-event does not lose it.
 
 
 ## Files

@@ -531,10 +531,9 @@
     <div id="queueTabContent" class="tab-content">
         <div class="section">
             <div class="section-title queue-title">🎬 Ceremony Queue</div>
-            <div class="section-sub">For back-to-back medal ceremonies. Build each one on the 🏅 Medal Slide tab and press ➕ Add to queue — the boxes clear straight away so you can set up the next event while the current anthem is still playing. ⏭ Next sits with the volume controls below, so it is reachable from every tab — and the N key does the same.</div>
+            <div class="section-sub">For back-to-back medal ceremonies. Build each one on the 🏅 Medal Slide tab and press ➕ Add to queue — the boxes clear straight away so you can set up the next event while the current anthem is still playing. While a queue is running, ⏭ Next and ⏹ Stop live on the green bar with the volume controls, so they are reachable from every tab — the N key advances too.</div>
             <div class="queue-toolbar">
                 <button class="btn btn-queue" id="queueStartBtn" disabled>▶ Start queue</button>
-                <button class="btn btn-show" id="queueStopBtn" disabled>⏹ Stop queue</button>
                 <button class="btn btn-editor" id="queueClearBtn" disabled>🧹 Clear queue</button>
             </div>
             <div class="tie-row song-row">
@@ -1519,7 +1518,6 @@ const queueAddBtn   = document.getElementById('queueAddBtn');
 const queueListEl   = document.getElementById('queueList');
 const queueBadge    = document.getElementById('queueBadge');
 const queueStartBtn = document.getElementById('queueStartBtn');
-const queueStopBtn  = document.getElementById('queueStopBtn');
 const queueClearBtn = document.getElementById('queueClearBtn');
 const queueAuto     = document.getElementById('queueAuto');
 const queueGap      = document.getElementById('queueGap');
@@ -1579,7 +1577,6 @@ function renderQueue() {
     queueBadge.textContent = queue.length;
     queueBadge.classList.toggle('zero', queue.length === 0);
     queueStartBtn.disabled = !queue.length || qState.running;
-    queueStopBtn.disabled = !qState.running;
     queueClearBtn.disabled = !queue.length;
     queueListEl.innerHTML = '';
     if (!queue.length) {
@@ -1765,7 +1762,6 @@ queueStartBtn.addEventListener('click', () => {
     const first = queue.findIndex(e => e.status !== 'done');
     queuePlay(first === -1 ? 0 : first);
 });
-queueStopBtn.addEventListener('click', queueStop);
 document.getElementById('queueBarNext').addEventListener('click', queueNext);
 document.getElementById('queueBarStop').addEventListener('click', queueStop);
 queueClearBtn.addEventListener('click', () => {
