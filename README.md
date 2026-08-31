@@ -24,7 +24,7 @@ When several events finish at once, you no longer have to wait for one anthem to
 
 1. Build a ceremony on the Medal Slide tab exactly as above, but press **➕ Add to queue** instead of Show on projector. The medal boxes clear straight away (the sport stays — the next event is usually the same one) so you can enter the following ceremony immediately, even while a ceremony is on the projector.
 2. Queue them all up, then on the **🎬 Queue** tab press **▶ Start queue**. Each ceremony puts its slide on the projector and starts its song together — the same thing Show on projector does, one button per ceremony.
-3. When the medallists are ready, press **⏭ Next ceremony**. It also sits next to the master volume, so it is reachable from any tab, and the **N** key does the same.
+3. When the medallists are ready, press **⏭ Next** on the green queue bar. It sits next to the master volume, so it is reachable from any tab, and the **N** key does the same. An accidental double-press is ignored — advancing twice inside 0.8 s would skip a ceremony.
 4. Tick **Auto-advance when the song ends** to move on by itself after the chosen gap (3–30 s). It is off by default — medallists leave the podium at their own pace, so advancing is normally the officer's call. When the song finishes the queue bar says so and waits.
 
 Per row: **▶** show that one now (jump the order), **↑ ↓** reorder, **✎** load it back into the editor to correct it (this takes it out of the queue — ➕ Add to queue puts it back), **✕** remove. The row being shown is locked while it is live.

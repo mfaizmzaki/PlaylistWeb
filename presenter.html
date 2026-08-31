@@ -531,10 +531,9 @@
     <div id="queueTabContent" class="tab-content">
         <div class="section">
             <div class="section-title queue-title">🎬 Ceremony Queue</div>
-            <div class="section-sub">For back-to-back medal ceremonies. Build each one on the 🏅 Medal Slide tab and press ➕ Add to queue — the boxes clear straight away so you can set up the next event while the current anthem is still playing. ⏭ Next ceremony sits with the volume controls, so it is reachable from every tab.</div>
+            <div class="section-sub">For back-to-back medal ceremonies. Build each one on the 🏅 Medal Slide tab and press ➕ Add to queue — the boxes clear straight away so you can set up the next event while the current anthem is still playing. ⏭ Next sits with the volume controls below, so it is reachable from every tab — and the N key does the same.</div>
             <div class="queue-toolbar">
                 <button class="btn btn-queue" id="queueStartBtn" disabled>▶ Start queue</button>
-                <button class="btn btn-anthem" id="queueNextBtn" disabled>⏭ Next ceremony</button>
                 <button class="btn btn-show" id="queueStopBtn" disabled>⏹ Stop queue</button>
                 <button class="btn btn-editor" id="queueClearBtn" disabled>🧹 Clear queue</button>
             </div>
@@ -1514,13 +1513,12 @@ document.getElementById('medalClearBtn').addEventListener('click', () => {
 const QUEUE_STORE = 'sukipt.ceremonyQueue';
 const MEDALS = ['gold', 'silver', 'bronze', 'bronze2'];
 let queue = [];
-const qState = { running: false, liveId: null, songUrl: null, awaiting: false, timer: null, tick: null };
+const qState = { running: false, liveId: null, songUrl: null, awaiting: false, timer: null, tick: null, advancing: false, lastAdvance: 0 };
 
 const queueAddBtn   = document.getElementById('queueAddBtn');
 const queueListEl   = document.getElementById('queueList');
 const queueBadge    = document.getElementById('queueBadge');
 const queueStartBtn = document.getElementById('queueStartBtn');
-const queueNextBtn  = document.getElementById('queueNextBtn');
 const queueStopBtn  = document.getElementById('queueStopBtn');
 const queueClearBtn = document.getElementById('queueClearBtn');
 const queueAuto     = document.getElementById('queueAuto');
@@ -1581,7 +1579,6 @@ function renderQueue() {
     queueBadge.textContent = queue.length;
     queueBadge.classList.toggle('zero', queue.length === 0);
     queueStartBtn.disabled = !queue.length || qState.running;
-    queueNextBtn.disabled = !qState.running;
     queueStopBtn.disabled = !qState.running;
     queueClearBtn.disabled = !queue.length;
     queueListEl.innerHTML = '';
@@ -1635,7 +1632,13 @@ function updateQueueBar(stateText) {
 
 // ---- transport ----
 async function queuePlay(i) {
+    // Starting a ceremony is async (template, logos, the still for the Slides tab).
+    // Without this a double-press of Next lands twice before the first one finishes
+    // and silently skips a ceremony.
+    if (qState.advancing) return;
     if (i < 0 || i >= queue.length) { queueFinish(); return; }
+    qState.advancing = true;
+    try {
     queueClearTimers();
     const prev = liveIndex();
     if (prev >= 0 && prev !== i) queue[prev].status = 'done';
@@ -1664,14 +1667,21 @@ async function queuePlay(i) {
     updateQueueBar('Slide live · song playing');
     statusEl.textContent = `🎬 Ceremony ${i + 1} of ${queue.length} — ${entryTitle(e)}`;
     statusEl.style.opacity = '1';
+    } finally { qState.advancing = false; }
 }
 
+// Each advance changes what is on the projector, so an accidental double-press
+// must not cost a ceremony. Presses inside this window after an advance are ignored;
+// it is well under the time any real ceremony takes, so deliberate presses are unaffected.
+const ADVANCE_LOCKOUT = 800;
 function queueNext() {
+    if (qState.advancing) return;
+    if (performance.now() - qState.lastAdvance < ADVANCE_LOCKOUT) return;
     const i = liveIndex();
     if (i < 0) { queueFinish(); return; }
-    queue[i].status = 'done';
-    if (i + 1 >= queue.length) { queueFinish(); return; }
-    queuePlay(i + 1);
+    qState.lastAdvance = performance.now();
+    if (i + 1 >= queue.length) { queue[i].status = 'done'; queueFinish(); return; }
+    queuePlay(i + 1);   // marks the outgoing ceremony done itself
 }
 
 function queueStop() {
@@ -1755,7 +1765,6 @@ queueStartBtn.addEventListener('click', () => {
     const first = queue.findIndex(e => e.status !== 'done');
     queuePlay(first === -1 ? 0 : first);
 });
-queueNextBtn.addEventListener('click', queueNext);
 queueStopBtn.addEventListener('click', queueStop);
 document.getElementById('queueBarNext').addEventListener('click', queueNext);
 document.getElementById('queueBarStop').addEventListener('click', queueStop);
