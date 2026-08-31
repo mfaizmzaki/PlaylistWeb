@@ -443,6 +443,19 @@
         .btn-backdrop-slide:hover { transform:translateY(-2px); box-shadow:0 6px 0 #0d5e56, var(--shadow-lg); }
         @media (max-width:900px) { .medal-boxes, .medal-boxes.tie { grid-template-columns:1fr 1fr; } }
 
+        /* ===== NEW STYLES FOR PRESENT BUTTON ===== */
+        .btn-present {
+            background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+            box-shadow: 0 4px 0 #0d5e56, var(--shadow-sm) !important;
+            color: #fff !important;
+            border: none !important;
+            font-weight: 700 !important;
+        }
+        .btn-present:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 0 #0d5e56, var(--shadow-lg) !important;
+        }
+
         /* MUSIC PROMPT MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -466,6 +479,7 @@
         .modal-box .modal-options label:hover { border-color: var(--um-blue); background: #f0f4ff; }
         .modal-box .modal-options label input[type="radio"] { width: 18px; height: 18px; accent-color: var(--um-blue); }
         .modal-box .modal-options label .label-desc { font-weight: 400; opacity: 0.6; font-size: 0.9rem; margin-left: 4px; }
+        .modal-box .modal-options label.hidden-option { display: none; }
         .modal-box .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
         .modal-box .modal-actions button {
             padding: 12px 32px; border: none; border-radius: 50px;
@@ -521,7 +535,6 @@
                 <button class="btn btn-anthem" id="medalAnthemBtn" disabled>▶ Lagu Juara</button>
                 <button class="btn btn-show" id="backdropBtn">🖼️ Backdrop</button>
                 <button class="btn btn-save-slide" id="saveMedalSlideBtn">💾 Save Slide</button>
-                <button class="btn btn-backdrop-slide" id="addBackdropSlideBtn">🖼️ Add Backdrop to Slides</button>
                 <button class="btn btn-editor" id="medalClearBtn">🧹 Clear all</button>
             </div>
         </div>
@@ -545,10 +558,11 @@
                     <div class="empty-slides">Upload slides to begin</div>
                 </div>
             </div>
-            <!-- Present selected slide button -->
+            <!-- Present selected slide button + Add Backdrop to Slides -->
             <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
                 <button class="btn btn-present" id="presentSlideBtn">▶ Present this slide</button>
-                <span style="font-size:0.85rem; color:#94a3b8; align-self:center;">(Sends the currently selected slide to the projector)</span>
+                <button class="btn btn-backdrop-slide" id="addBackdropSlideBtn">🖼️ Add Backdrop to Slides</button>
+                <span style="font-size:0.85rem; color:#94a3b8; align-self:center;">(Present sends to projector)</span>
             </div>
         </div>
     </div>
@@ -616,7 +630,7 @@
         <h2>🎵 Choose Music</h2>
         <p id="modalPromptText">Select which song to play with this slide:</p>
         <div class="modal-options" id="modalOptions">
-            <label><input type="radio" name="modalSong" value="anthem" checked> <span id="modalAnthemLabel">🎵 Lagu Universiti</span> <span class="label-desc">(champion's anthem)</span></label>
+            <label id="modalAnthemOption"><input type="radio" name="modalSong" value="anthem" checked> <span id="modalAnthemLabel">🎵 Lagu Universiti</span> <span class="label-desc">(champion's anthem)</span></label>
             <label><input type="radio" name="modalSong" value="sukipt"> 🏴 LAGU SUKIPT <span class="label-desc">(official SUKIPT song)</span></label>
             <label><input type="radio" name="modalSong" value="none"> 🔇 No Music</label>
         </div>
@@ -1214,6 +1228,7 @@ const presentSlideBtn = document.getElementById('presentSlideBtn');
 const modal = document.getElementById('musicPromptModal');
 const modalPromptText = document.getElementById('modalPromptText');
 const modalAnthemLabel = document.getElementById('modalAnthemLabel');
+const modalAnthemOption = document.getElementById('modalAnthemOption');
 const modalConfirmBtn = document.getElementById('modalConfirmBtn');
 const modalCancelBtn = document.getElementById('modalCancelBtn');
 const modalOptions = document.getElementById('modalOptions');
@@ -1369,19 +1384,7 @@ function goToSlide(index) {
     });
 }
 
-// ===== MUSIC PROMPT LOGIC =====
-function isBackdropSlide(dataURL) {
-    // Check if this is the backdrop image (by data URL or by checking if it contains the backdrop image data)
-    // We'll check if it's the backdrop by checking if the data URL matches the backdrop image
-    // Since we can't compare data URLs reliably, we'll check if the slide was added via "Add Backdrop to Slides"
-    // which stores a marker, or we check the content.
-    // Simple approach: if the slide data URL starts with "data:image/png;base64," and is the backdrop,
-    // we can't easily detect. So we'll use a flag stored with the slide.
-    // We'll store metadata in a separate array.
-    return false; // We'll use the metadata approach below
-}
-
-// Store slide metadata (e.g., whether it's a backdrop)
+// ===== STORE SLIDE METADATA =====
 let slideMetadata = [];
 
 function addSlideWithMetadata(dataURL, metadata = {}) {
@@ -1394,25 +1397,9 @@ function addSlideWithMetadata(dataURL, metadata = {}) {
 function isSlideFlagPage(index) {
     if (index < 0 || index >= slides.length) return false;
     const meta = slideMetadata[index] || {};
-    // If it's a backdrop, it's not a flag page
     if (meta.isBackdrop) return false;
-    // Check if the slide data contains the template image or is the medal canvas
-    // We'll check if the data URL is from the medal canvas or the template
-    // The medal canvas is generated and will have the flags, so it's a flag page.
-    // For uploaded images, we check if they look like the template.
-    const dataURL = slides[index];
-    // If it's the medal canvas or the template, it's a flag page.
-    // We can't do pixel-perfect detection, so we use heuristics:
-    // - If it's the medal canvas (generated), it's a flag page
-    // - If it's the template image, it's a flag page
-    // - If it's a backdrop, it's not
     if (meta.isMedalSlide) return true;
     if (meta.isTemplateSlide) return true;
-    if (meta.isBackdrop) return false;
-    // For uploaded slides, check if the data URL matches the template image
-    // We can't compare data URLs directly, so we'll use a heuristic: check if it's the template image
-    // by looking at the data URL length or content (not reliable)
-    // Default: if it's not a backdrop, assume it could be a flag page
     return true; // Assume uploaded slides could be flag pages
 }
 
@@ -1441,35 +1428,36 @@ function handlePresentClick(index) {
     pendingPresentIndex = index;
     pendingPresentDataURL = dataURL;
 
-    // Find the university name from the medal picks if this is a medal slide
+    // Find the university name and anthem from the medal picks
     let uniName = null;
+    let hasAnthem = false;
     let anthemPath = null;
-    if (meta.isMedalSlide) {
-        const goldPick = picks.gold;
-        if (goldPick) {
-            uniName = goldPick.name;
-            anthemPath = goldPick.anthem ? './' + goldPick.anthem : null;
-        }
-    } else {
-        // For template slides, try to find the gold winner from picks
-        const goldPick = picks.gold;
-        if (goldPick) {
-            uniName = goldPick.name;
-            anthemPath = goldPick.anthem ? './' + goldPick.anthem : null;
-        }
+    const goldPick = picks.gold;
+    if (goldPick) {
+        uniName = goldPick.name;
+        hasAnthem = !!goldPick.anthem;
+        anthemPath = goldPick.anthem ? './' + goldPick.anthem : null;
     }
 
     // Update modal text
-    if (uniName) {
+    if (uniName && hasAnthem) {
         modalPromptText.innerHTML = `Select which song to play with this slide. <span class="uni-name-highlight">${uniName}</span> is the champion.`;
         modalAnthemLabel.textContent = `🎵 Lagu Universiti · ${uniName}`;
+        modalAnthemOption.classList.remove('hidden-option');
+        document.querySelector('input[name="modalSong"][value="anthem"]').checked = true;
+    } else if (uniName && !hasAnthem) {
+        modalPromptText.innerHTML = `Select which song to play with this slide. <span class="uni-name-highlight">${uniName}</span> is the champion, but has no anthem file.`;
+        // Hide the anthem option since there's no file
+        modalAnthemOption.classList.add('hidden-option');
+        // Select LAGU SUKIPT or No Music by default
+        document.querySelector('input[name="modalSong"][value="sukipt"]').checked = true;
     } else {
         modalPromptText.textContent = 'Select which song to play with this slide:';
         modalAnthemLabel.textContent = '🎵 Lagu Universiti (champion\'s anthem)';
+        // If no gold pick, we don't know the champion, so hide the anthem option
+        modalAnthemOption.classList.add('hidden-option');
+        document.querySelector('input[name="modalSong"][value="sukipt"]').checked = true;
     }
-
-    // Reset radio selection to default (anthem)
-    document.querySelector('input[name="modalSong"][value="anthem"]').checked = true;
 
     // Show modal
     modal.classList.add('active');
@@ -1497,7 +1485,6 @@ modalConfirmBtn.addEventListener('click', () => {
         } else if (goldPick) {
             document.getElementById('flagBtn').click();
         } else {
-            // No gold pick, play LAGU SUKIPT as fallback
             document.getElementById('flagBtn').click();
         }
     } else if (choice === 'sukipt') {
@@ -1530,6 +1517,38 @@ modal.addEventListener('click', (e) => {
 presentSlideBtn.addEventListener('click', () => {
     if (slides.length === 0) return;
     handlePresentClick(currentSlideIndex);
+});
+
+// ===== ADD BACKDROP TO SLIDES (moved to Slide Manager) =====
+document.getElementById('addBackdropSlideBtn').addEventListener('click', async () => {
+    const backdropImg = new Image();
+    backdropImg.crossOrigin = 'anonymous';
+    backdropImg.src = BACKDROP_IMAGE;
+    await new Promise((resolve, reject) => {
+        backdropImg.onload = resolve;
+        backdropImg.onerror = () => reject('Failed to load backdrop');
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = 1920;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+    const a = backdropImg.width / backdropImg.height;
+    const ca = 1920 / 1080;
+    let sx = 0, sy = 0, sw = backdropImg.width, sh = backdropImg.height;
+    if (a > ca) { sw = backdropImg.height * ca; sx = (backdropImg.width - sw) / 2; } else { sh = backdropImg.width / ca; sy = (backdropImg.height - sh) / 2; }
+    ctx.drawImage(backdropImg, sx, sy, sw, sh, 0, 0, 1920, 1080);
+    if (Medal.logo.complete && Medal.logo.naturalWidth) {
+        const BACKDROP_LOGO_BOX = [123, 197, 849, 366];
+        const [x0, y0, x1, y1] = BACKDROP_LOGO_BOX.map(v => v * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x0 - 8, y0 - 8, x1 - x0 + 16, y1 - y0 + 16);
+        Medal.drawContained(ctx, Medal.logo, x0, y0, x1, y1, 0);
+    }
+    const dataURL = canvas.toDataURL('image/png');
+    addSlideWithMetadata(dataURL, { isBackdrop: true });
+    statusEl.textContent = '✅ Backdrop added as slide #' + slides.length;
+    statusEl.style.opacity = '1';
+    setTimeout(() => { statusEl.style.opacity = '0.5'; }, 3000);
 });
 
 // Drag & drop for slides
@@ -1634,58 +1653,19 @@ document.getElementById('saveMedalSlideBtn').addEventListener('click', async () 
     }
 });
 
-// Add Backdrop to Slides (NEW)
-document.getElementById('addBackdropSlideBtn').addEventListener('click', async () => {
-    // Load the backdrop image and add it as a slide
-    const backdropImg = new Image();
-    backdropImg.crossOrigin = 'anonymous';
-    backdropImg.src = BACKDROP_IMAGE;
-    await new Promise((resolve, reject) => {
-        backdropImg.onload = resolve;
-        backdropImg.onerror = () => reject('Failed to load backdrop');
-    });
-    // Draw the backdrop on a canvas to get a data URL
-    const canvas = document.createElement('canvas');
-    canvas.width = 1920;
-    canvas.height = 1080;
-    const ctx = canvas.getContext('2d');
-    // Draw backdrop with cover fit
-    const a = backdropImg.width / backdropImg.height;
-    const ca = 1920 / 1080;
-    let sx = 0, sy = 0, sw = backdropImg.width, sh = backdropImg.height;
-    if (a > ca) { sw = backdropImg.height * ca; sx = (backdropImg.width - sw) / 2; } else { sh = backdropImg.width / ca; sy = (backdropImg.height - sh) / 2; }
-    ctx.drawImage(backdropImg, sx, sy, sw, sh, 0, 0, 1920, 1080);
-    // Also draw the hi-res logo on top (like the public page does)
-    if (Medal.logo.complete && Medal.logo.naturalWidth) {
-        const BACKDROP_LOGO_BOX = [123, 197, 849, 366];
-        const [x0, y0, x1, y1] = BACKDROP_LOGO_BOX.map(v => v * 2);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x0 - 8, y0 - 8, x1 - x0 + 16, y1 - y0 + 16);
-        Medal.drawContained(ctx, Medal.logo, x0, y0, x1, y1, 0);
-    }
-    const dataURL = canvas.toDataURL('image/png');
-    addSlideWithMetadata(dataURL, { isBackdrop: true });
-    statusEl.textContent = '✅ Backdrop added as slide #' + slides.length;
-    statusEl.style.opacity = '1';
-    setTimeout(() => { statusEl.style.opacity = '0.5'; }, 3000);
-});
-
 // Show on projector
 medalShowBtn.addEventListener('click', async () => {
     await drawMedalSlide();
     const logos = {}; for (const m in picks) if (picks[m]) logos[m] = picks[m].logo;
     channel.postMessage({ action: 'medalSlide', logos, tie: tieCheck.checked, sport: picks.sport ? { logo: picks.sport.logo, name: picks.sport.name } : null });
-    // Save as slide with metadata
     try {
         const dataURL = medalCanvas.toDataURL('image/png');
         const idx = addSlideWithMetadata(dataURL, { isMedalSlide: true });
-        // Auto-select the new slide for preview
         goToSlide(idx);
     } catch (e) {}
     const song = document.querySelector('input[name=showSong]:checked').value;
     if (song === 'anthem' && picks.gold) medalAnthemBtn.click();
     else if (song === 'sukipt' && !isPlaying(FLAG_SONG)) document.getElementById('flagBtn').click();
-    // if song === 'none' → no music
     statusEl.textContent = '📺 Medal slide shown';
     statusEl.style.opacity = '1';
 });
