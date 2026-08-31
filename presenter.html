@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- NO CSP META TAG -->
-    <title>SUKIPT 2026 - Presenter Cockpit</title>
+    <title>Podi@UM - Presenter</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>" />
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="teams.js"></script>
@@ -436,6 +436,50 @@
         .btn-show { background:linear-gradient(135deg,#2d3748,#1a202c); box-shadow:0 4px 0 #0d1117, var(--shadow-sm); }
         .btn-anthem { background:linear-gradient(135deg,var(--um-gold),var(--um-gold-dark)); color:var(--um-black); box-shadow:0 4px 0 #b8960f, var(--shadow-sm); }
         @media (max-width:900px) { .medal-boxes, .medal-boxes.tie { grid-template-columns:1fr 1fr; } }
+        /* ===== Ceremony queue ===== */
+        .queue-title { background:linear-gradient(135deg,#0b3d2e,#07261c); border-color:var(--um-gold); }
+        .btn-queue { background:linear-gradient(135deg,#0f766e,#0b3d2e); box-shadow:0 4px 0 #07261c, var(--shadow-sm); }
+        .btn-queue:hover { transform:translateY(-2px); box-shadow:0 6px 0 #07261c, var(--shadow-lg); }
+        .queue-badge { display:inline-block; min-width:22px; padding:0 6px; margin-left:6px; border-radius:11px;
+            background:var(--um-red); color:#fff; font-size:0.8rem; line-height:20px; vertical-align:2px; }
+        .queue-badge.zero { display:none; }
+        .queue-toolbar { display:flex; gap:12px; flex-wrap:wrap; }
+        .queue-toolbar .btn { flex:1 1 180px; }
+        .queue-toolbar .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+        .queue-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+        .queue-empty { padding:26px; text-align:center; font-family:'Oswald',sans-serif; letter-spacing:1px; opacity:0.45;
+            border:2px dashed rgba(0,51,160,0.25); border-radius:16px; }
+        .queue-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:14px;
+            background:var(--um-gray-light); border:2px solid transparent; transition:var(--transition); }
+        .queue-item.live { border-color:var(--um-gold); background:#fffbe6; box-shadow:var(--shadow-sm); }
+        .queue-item.done { opacity:0.45; }
+        .queue-num { font-family:'Bangers',cursive; font-size:1.5rem; color:var(--um-blue); min-width:30px; text-align:center; }
+        .queue-item.live .queue-num { color:var(--um-red); }
+        .queue-body { flex:1; min-width:0; }
+        .queue-sport { font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+            font-size:0.95rem; color:var(--um-black); display:flex; align-items:center; gap:6px; }
+        .queue-sport img { height:20px; width:auto; }
+        .queue-medals { display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; font-family:'Oswald',sans-serif; font-size:0.85rem; }
+        .queue-medals span { display:flex; align-items:center; gap:4px; }
+        .queue-medals img { height:18px; width:auto; }
+        .queue-song { font-family:'Oswald',sans-serif; font-size:0.78rem; letter-spacing:1px; opacity:0.6; margin-top:3px; text-transform:uppercase; }
+        .queue-ops { display:flex; gap:4px; }
+        .queue-ops button { border:none; background:rgba(0,51,160,0.08); color:var(--um-blue); cursor:pointer;
+            width:32px; height:32px; border-radius:8px; font-size:0.95rem; transition:var(--transition); }
+        .queue-ops button:hover:not(:disabled) { background:var(--um-blue); color:#fff; }
+        .queue-ops button:disabled { opacity:0.25; cursor:not-allowed; }
+        /* Running bar — sits with the always-visible transport controls so Next is never a tab away. */
+        .queue-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; padding:12px 16px;
+            border-radius:16px; background:linear-gradient(135deg,#0b3d2e,#07261c); color:#fff; box-shadow:var(--shadow-sm); }
+        .queue-bar[hidden] { display:none; }
+        .queue-bar-info { flex:1; min-width:180px; font-family:'Oswald',sans-serif; }
+        .queue-bar-pos { font-family:'Bangers',cursive; font-size:1.3rem; letter-spacing:2px; color:var(--um-gold); margin-right:8px; }
+        .queue-bar-name { font-weight:600; letter-spacing:1px; }
+        .queue-bar-state { display:block; font-size:0.78rem; letter-spacing:1px; opacity:0.75; text-transform:uppercase; }
+        .queue-bar .btn { flex:0 0 auto; padding:12px 22px; font-size:0.95rem; }
+        .queue-bar.ready .queue-bar-state { color:var(--um-gold); opacity:1; animation:queuePulse 1.4s ease-in-out infinite; }
+        @keyframes queuePulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+        @media (max-width:700px) { .queue-bar .btn { flex:1 1 100%; } }
     </style>
 </head>
 <body>
@@ -444,12 +488,13 @@
     <!-- HEADER -->
     <div class="header">
         <img class="header-logo" src="sukipt-logo.png" alt="SUKIPT 7 · Universiti Malaya 2026">
-        <div class="header-sub">Presenter Cockpit</div>
+        <div class="header-sub">Podi@UM - Sukipt7</div>
     </div>
 
     <!-- TABS -->
     <div class="tab-nav">
         <button class="tab-btn active" id="tabMedal">🏅 Medal Slide</button>
+        <button class="tab-btn" id="tabQueue">🎬 Queue<span class="queue-badge zero" id="queueBadge">0</span></button>
         <button class="tab-btn" id="tabMain">🎧 Main Control</button>
         <button class="tab-btn" id="tabContingent">🏳️ University Songs</button>
         <button class="tab-btn" id="tabSlides">🖼️ Slides</button>
@@ -459,7 +504,7 @@
     <div id="medalTabContent" class="tab-content active">
         <div class="section">
             <div class="section-title editor-title">🏅 Medal Slide</div>
-            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Choose the song, then Show on projector — it starts with the slide (Lagu Juara stops / replays the anthem). &nbsp;4 · Backdrop when done.</div>
+            <div class="section-sub">1 · Click the sport. &nbsp;2 · Click the winning university in each medal box (type to search). &nbsp;3 · Choose the song, then Show on projector — it starts with the slide (Lagu Juara stops / replays the anthem). &nbsp;4 · Backdrop when done.<br>Several events finishing at once? Press <b>➕ Add to queue</b> instead of Show — build them all now, then run them back to back from the 🎬 Queue tab.</div>
             <div class="medal-box sport" data-medal="sport"><h4>🏟️ SUKAN · SPORT</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search sport…"><div class="logo-grid"></div></div>
             <div class="medal-boxes" id="medalBoxes">
                 <div class="medal-box gold" data-medal="gold"><h4>🥇 EMAS · GOLD</h4><div class="picked empty">Not selected</div><input type="search" placeholder="Search university…"><div class="logo-grid"></div></div>
@@ -475,12 +520,32 @@
             <div class="medal-preview"><canvas id="medalCanvas" width="1920" height="1080"></canvas></div>
             <div class="medal-actions">
                 <button class="btn btn-show" id="medalShowBtn" disabled>📺 Show on projector</button>
+                <button class="btn btn-queue" id="queueAddBtn" disabled title="Save these picks as a queued ceremony and clear the boxes for the next one">➕ Add to queue</button>
                 <button class="btn btn-anthem" id="medalAnthemBtn" disabled>▶ Lagu Juara</button>
                 <button class="btn btn-show" id="backdropBtn">🖼️ Backdrop</button>
                 <button class="btn btn-editor" id="medalClearBtn">🧹 Clear all</button>
             </div>
         </div>
     </div>
+    <!-- ======= TAB: CEREMONY QUEUE ======= -->
+    <div id="queueTabContent" class="tab-content">
+        <div class="section">
+            <div class="section-title queue-title">🎬 Ceremony Queue</div>
+            <div class="section-sub">For back-to-back medal ceremonies. Build each one on the 🏅 Medal Slide tab and press ➕ Add to queue — the boxes clear straight away so you can set up the next event while the current anthem is still playing. ⏭ Next ceremony sits with the volume controls, so it is reachable from every tab.</div>
+            <div class="queue-toolbar">
+                <button class="btn btn-queue" id="queueStartBtn" disabled>▶ Start queue</button>
+                <button class="btn btn-anthem" id="queueNextBtn" disabled>⏭ Next ceremony</button>
+                <button class="btn btn-show" id="queueStopBtn" disabled>⏹ Stop queue</button>
+                <button class="btn btn-editor" id="queueClearBtn" disabled>🧹 Clear queue</button>
+            </div>
+            <div class="tie-row song-row">
+                <label><input type="checkbox" id="queueAuto"> Auto-advance when the song ends</label>
+                <label>after <select id="queueGap"><option value="3">3 s</option><option value="8" selected>8 s</option><option value="15">15 s</option><option value="30">30 s</option></select></label>
+            </div>
+            <div class="queue-list" id="queueList"></div>
+        </div>
+    </div>
+
     <!-- ======= TAB 1: MAIN CONTROL ======= -->
     <div id="mainTabContent" class="tab-content">
         <div class="section">
@@ -541,6 +606,15 @@
 
     <!-- ======= ALWAYS-VISIBLE PROGRESS & CONTROLS ======= -->
     <div class="fixed-controls">
+        <div class="queue-bar" id="queueBar" hidden>
+            <div class="queue-bar-info">
+                <span class="queue-bar-pos" id="queueBarPos">0 / 0</span>
+                <span class="queue-bar-name" id="queueBarName">—</span>
+                <span class="queue-bar-state" id="queueBarState"></span>
+            </div>
+            <button class="btn btn-anthem" id="queueBarNext">⏭ Next</button>
+            <button class="btn btn-show" id="queueBarStop">⏹ Stop</button>
+        </div>
         <div class="progress-container">
             <div class="now-playing-label" id="nowPlayingLabel">Ready — Select a track</div>
             <input type="range" min="0" max="100" value="0" class="progress-slider" id="progressSlider" />
@@ -790,9 +864,11 @@ function internalPlayFresh(url, startTime = 0, fadeInDuration = 1.5, isHouse = f
         if (activeAudioEl === audioEl) updateProgressBar();
     });
     audioEl.addEventListener('ended', () => {
-        if (isHouse && currentSources.length > 0 && currentSources[0]?.audioEl === audioEl) {
-            handleHouseEnded();
+        if (isHouse) {
+            if (currentSources.length > 0 && currentSources[0]?.audioEl === audioEl) handleHouseEnded();
+            return;
         }
+        if (activeAudioEl === audioEl) queueSongEnded(url);   // a queued ceremony's song has finished
     });
 
     const label = getDisplayName(url);
@@ -1356,6 +1432,7 @@ function setPick(medal, team) {
     picks[medal] = team;
     document.querySelector(`.medal-box[data-medal="${medal}"]`)._refresh();
     medalShowBtn.disabled = !(picks.gold || picks.silver || picks.bronze);
+    queueAddBtn.disabled = medalShowBtn.disabled;
     medalAnthemBtn.disabled = !picks.gold;
     medalAnthemBtn.textContent = picks.gold ? `▶ Lagu Juara · ${picks.gold.anthem ? picks.gold.short : 'LAGU SUKIPT'}` : '▶ Lagu Juara';
     drawMedalSlide();
@@ -1367,17 +1444,22 @@ tieCheck.addEventListener('change', () => {
     if (!tieCheck.checked) setPick('bronze2', null); else drawMedalSlide();
 });
 
-async function drawMedalSlide() {
-    if (!templateImg.complete || !templateImg.naturalWidth) return;
-    const ctx = medalCanvas.getContext('2d');
+// Render one ceremony's picks onto any canvas — the editor preview, or the queue's
+// offscreen canvas (so playing a queued ceremony doesn't wipe the slide being built).
+async function renderMedal(ctx, p, tie) {
+    if (!templateImg.complete || !templateImg.naturalWidth) return false;
     ctx.clearRect(0, 0, 1920, 1080);
-    const rects = Medal.drawBase(ctx, templateImg, tieCheck.checked);
+    const rects = Medal.drawBase(ctx, templateImg, tie);
     for (const m in rects) {
-        const t = picks[m]; if (!t) continue;
+        const t = p[m]; if (!t) continue;
         const img = await loadLogo(t.logo); if (!img) continue;
         Medal.drawContained(ctx, img, ...rects[m], 0.12);
     }
-    if (picks.sport) Medal.drawSport(ctx, await loadLogo(picks.sport.logo), picks.sport.name);
+    if (p.sport) Medal.drawSport(ctx, await loadLogo(p.sport.logo), p.sport.name);
+    return true;
+}
+async function drawMedalSlide() {
+    await renderMedal(medalCanvas.getContext('2d'), picks, tieCheck.checked);
 }
 medalShowBtn.addEventListener('click', async () => {
     await drawMedalSlide();
@@ -1409,16 +1491,280 @@ document.getElementById('medalClearBtn').addEventListener('click', () => {
     document.querySelectorAll('.medal-box input[type=search]').forEach(i => { i.value = ''; i.dispatchEvent(new Event('input')); });
 });
 // ============================================================
+// 11. CEREMONY QUEUE – stack ceremonies up, run them back to back
+// ============================================================
+// When several events finish at once the officer can't set up the next medallists
+// until the current anthem is over. Queued ceremonies are built ahead of time, so
+// running the ceremony is one button: the slide goes up and its song starts together.
+const QUEUE_STORE = 'sukipt.ceremonyQueue';
+const MEDALS = ['gold', 'silver', 'bronze', 'bronze2'];
+let queue = [];
+const qState = { running: false, liveId: null, songUrl: null, awaiting: false, timer: null, tick: null };
+
+const queueAddBtn   = document.getElementById('queueAddBtn');
+const queueListEl   = document.getElementById('queueList');
+const queueBadge    = document.getElementById('queueBadge');
+const queueStartBtn = document.getElementById('queueStartBtn');
+const queueNextBtn  = document.getElementById('queueNextBtn');
+const queueStopBtn  = document.getElementById('queueStopBtn');
+const queueClearBtn = document.getElementById('queueClearBtn');
+const queueAuto     = document.getElementById('queueAuto');
+const queueGap      = document.getElementById('queueGap');
+const queueBar      = document.getElementById('queueBar');
+const queueBarPos   = document.getElementById('queueBarPos');
+const queueBarName  = document.getElementById('queueBarName');
+const queueBarState = document.getElementById('queueBarState');
+// The projector renders from file paths, but a queued ceremony still needs a canvas
+// for the Slides-tab still — draw it here so the editor preview keeps the next event.
+const queueCanvas = document.createElement('canvas'); queueCanvas.width = 1920; queueCanvas.height = 1080;
+
+// ---- entry helpers ----
+function entryPicks(e) { return { sport: e.sport, gold: e.gold, silver: e.silver, bronze: e.bronze, bronze2: e.bronze2 }; }
+function entryTitle(e) { return (e.sport ? e.sport.name : 'Ceremony') + (e.gold ? ' · ' + e.gold.short : ''); }
+function entrySongUrl(e) {
+    if (e.song === 'sukipt') return FLAG_SONG;
+    return (e.gold && e.gold.anthem) ? './' + e.gold.anthem : FLAG_SONG;   // no anthem on file → LAGU SUKIPT
+}
+function entrySongLabel(e) {
+    if (e.song === 'sukipt') return '🎵 LAGU SUKIPT';
+    if (e.gold && e.gold.anthem) return "🎵 Champion's anthem · " + e.gold.short;
+    return "🎵 Champion's anthem → LAGU SUKIPT (none on file)";
+}
+function liveIndex() { return qState.liveId ? queue.findIndex(e => e.id === qState.liveId) : -1; }
+
+// ---- persistence: a refresh mid-event must not cost the queue ----
+function saveQueue() {
+    try {
+        localStorage.setItem(QUEUE_STORE, JSON.stringify(queue.map(e => ({
+            id: e.id, tie: e.tie, song: e.song, status: e.status,
+            sport: e.sport ? e.sport.id : null,
+            gold: e.gold ? e.gold.id : null, silver: e.silver ? e.silver.id : null,
+            bronze: e.bronze ? e.bronze.id : null, bronze2: e.bronze2 ? e.bronze2.id : null
+        }))));
+    } catch (err) {}   // private mode / file:// with storage blocked — the queue just won't survive a reload
+}
+function loadQueue() {
+    let raw = null;
+    try { raw = localStorage.getItem(QUEUE_STORE); } catch (err) { return; }
+    if (!raw) return;
+    try {
+        queue = JSON.parse(raw).map(r => ({
+            id: r.id, tie: !!r.tie, song: r.song === 'sukipt' ? 'sukipt' : 'anthem',
+            status: r.status === 'done' ? 'done' : 'pending',
+            sport: r.sport ? SPORTS.find(x => x.id === r.sport) || null : null,
+            gold: r.gold ? TEAMS.find(x => x.id === r.gold) || null : null,
+            silver: r.silver ? TEAMS.find(x => x.id === r.silver) || null : null,
+            bronze: r.bronze ? TEAMS.find(x => x.id === r.bronze) || null : null,
+            bronze2: r.bronze2 ? TEAMS.find(x => x.id === r.bronze2) || null : null
+        })).filter(e => e.gold || e.silver || e.bronze);
+    } catch (err) { queue = []; }
+}
+
+// ---- rendering ----
+function renderQueue() {
+    const live = liveIndex();
+    queueBadge.textContent = queue.length;
+    queueBadge.classList.toggle('zero', queue.length === 0);
+    queueStartBtn.disabled = !queue.length || qState.running;
+    queueNextBtn.disabled = !qState.running;
+    queueStopBtn.disabled = !qState.running;
+    queueClearBtn.disabled = !queue.length;
+    queueListEl.innerHTML = '';
+    if (!queue.length) {
+        queueListEl.innerHTML = '<div class="queue-empty">Queue is empty — build a ceremony on the 🏅 Medal Slide tab and press ➕ Add to queue.</div>';
+        updateQueueBar();
+        return;
+    }
+    queue.forEach((e, i) => {
+        const isLive = i === live && qState.running;
+        const row = document.createElement('div');
+        row.className = 'queue-item' + (isLive ? ' live' : e.status === 'done' ? ' done' : '');
+        const medals = MEDALS.filter(m => e[m]).map(m =>
+            `<span>${ {gold:'🥇',silver:'🥈',bronze:'🥉',bronze2:'🥉'}[m] }<img src="${e[m].logo}" alt="">${e[m].short}</span>`).join('');
+        row.innerHTML =
+            `<div class="queue-num">${isLive ? '▶' : i + 1}</div>` +
+            `<div class="queue-body">` +
+                `<div class="queue-sport">${e.sport ? `<img src="${e.sport.logo}" alt="">${e.sport.name}` : 'No sport selected'}${e.tie ? ' · tie' : ''}</div>` +
+                `<div class="queue-medals">${medals}</div>` +
+                `<div class="queue-song">${entrySongLabel(e)}</div>` +
+            `</div>` +
+            `<div class="queue-ops">` +
+                `<button data-op="play" title="Show this one now">▶</button>` +
+                `<button data-op="up" title="Move up" ${i === 0 || isLive ? 'disabled' : ''}>↑</button>` +
+                `<button data-op="down" title="Move down" ${i === queue.length - 1 || isLive ? 'disabled' : ''}>↓</button>` +
+                `<button data-op="edit" title="Load back into the editor (takes it out of the queue)" ${isLive ? 'disabled' : ''}>✎</button>` +
+                `<button data-op="del" title="Remove from the queue" ${isLive ? 'disabled' : ''}>✕</button>` +
+            `</div>`;
+        row.querySelector('.queue-ops').addEventListener('click', ev => {
+            const op = ev.target.dataset.op; if (!op || ev.target.disabled) return;
+            if (op === 'play') queuePlay(i);
+            else if (op === 'up') queueMove(i, -1);
+            else if (op === 'down') queueMove(i, 1);
+            else if (op === 'edit') queueEdit(i);
+            else if (op === 'del') { queue.splice(i, 1); saveQueue(); renderQueue(); }
+        });
+        queueListEl.appendChild(row);
+    });
+    updateQueueBar();
+}
+
+function updateQueueBar(stateText) {
+    const i = liveIndex(), on = qState.running && i >= 0;
+    queueBar.hidden = !on;
+    queueBar.classList.toggle('ready', on && qState.awaiting);
+    if (!on) return;
+    queueBarPos.textContent = `${i + 1} / ${queue.length}`;
+    queueBarName.textContent = entryTitle(queue[i]);
+    if (stateText !== undefined) queueBarState.textContent = stateText;
+}
+
+// ---- transport ----
+async function queuePlay(i) {
+    if (i < 0 || i >= queue.length) { queueFinish(); return; }
+    queueClearTimers();
+    const prev = liveIndex();
+    if (prev >= 0 && prev !== i) queue[prev].status = 'done';
+    const e = queue[i];
+    qState.running = true; qState.liveId = e.id; qState.awaiting = false;
+    e.status = 'pending';
+
+    if (await renderMedal(queueCanvas.getContext('2d'), entryPicks(e), e.tie)) {
+        try {   // still for the Slides tab; toDataURL throws on file:// (tainted canvas) — skip it there
+            slides.push(queueCanvas.toDataURL('image/png'));
+            currentSlideIndex = slides.length - 1;
+            renderSlideThumbnails();
+            slidePreviewImg.src = slides[currentSlideIndex];
+        } catch (err) {}
+    }
+    const logos = {}; for (const m of MEDALS) if (e[m]) logos[m] = e[m].logo;
+    sendCommand({ action: 'medalSlide', logos, tie: e.tie, sport: e.sport ? { logo: e.sport.logo, name: e.sport.name } : null });
+
+    qState.songUrl = entrySongUrl(e);
+    playTrack(qState.songUrl, 0, false);
+    updateTrackUI(qState.songUrl);
+    if (qState.songUrl !== FLAG_SONG) updateFlagUI(false);
+    updateHouseUI();
+
+    renderQueue();
+    updateQueueBar('Slide live · song playing');
+    statusEl.textContent = `🎬 Ceremony ${i + 1} of ${queue.length} — ${entryTitle(e)}`;
+    statusEl.style.opacity = '1';
+}
+
+function queueNext() {
+    const i = liveIndex();
+    if (i < 0) { queueFinish(); return; }
+    queue[i].status = 'done';
+    if (i + 1 >= queue.length) { queueFinish(); return; }
+    queuePlay(i + 1);
+}
+
+function queueStop() {
+    queueClearTimers();
+    qState.running = false; qState.liveId = null; qState.songUrl = null; qState.awaiting = false;
+    renderQueue();
+    statusEl.textContent = '🎬 Queue stopped';
+}
+function queueFinish() {
+    queueClearTimers();
+    const i = liveIndex(); if (i >= 0) queue[i].status = 'done';
+    qState.running = false; qState.liveId = null; qState.songUrl = null; qState.awaiting = false;
+    renderQueue();
+    statusEl.textContent = '🎬 Queue finished — every ceremony done';
+    statusEl.style.opacity = '1';
+}
+function queueClearTimers() {
+    clearTimeout(qState.timer); qState.timer = null;
+    clearInterval(qState.tick); qState.tick = null;
+}
+
+// The song ending is the cue that the ceremony is over. Advancing is still the
+// officer's call by default — medallists leave the podium at their own pace.
+function queueSongEnded(url) {
+    if (!qState.running || url !== qState.songUrl) return;
+    qState.awaiting = true;
+    if (!queueAuto.checked) {
+        updateQueueBar('Song finished — press ⏭ Next when ready');
+        renderQueue();
+        return;
+    }
+    let left = parseInt(queueGap.value, 10) || 0;
+    const tick = () => {
+        updateQueueBar(`Song finished — next ceremony in ${Math.max(0, left)} s`);
+        left--;
+    };
+    tick();
+    qState.tick = setInterval(tick, 1000);
+    qState.timer = setTimeout(() => { queueClearTimers(); queueNext(); }, (parseInt(queueGap.value, 10) || 0) * 1000);
+    renderQueue();
+}
+
+function queueMove(i, d) {
+    const j = i + d;
+    if (j < 0 || j >= queue.length) return;
+    [queue[i], queue[j]] = [queue[j], queue[i]];
+    saveQueue(); renderQueue();
+}
+function queueEdit(i) {
+    const e = queue[i];
+    tieCheck.checked = e.tie;
+    tieCheck.dispatchEvent(new Event('change'));
+    setPick('sport', e.sport || null);
+    MEDALS.forEach(m => setPick(m, e[m] || null));
+    const radio = document.querySelector(`input[name=showSong][value="${e.song}"]`);
+    if (radio) radio.checked = true;
+    queue.splice(i, 1);
+    saveQueue(); renderQueue(); switchTab('medal');
+    statusEl.textContent = '✎ Loaded into the editor — ➕ Add to queue puts it back';
+}
+
+// ---- wiring ----
+queueAddBtn.addEventListener('click', () => {
+    queue.push({
+        id: 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        sport: picks.sport, gold: picks.gold, silver: picks.silver, bronze: picks.bronze,
+        bronze2: tieCheck.checked ? picks.bronze2 : null,
+        tie: tieCheck.checked,
+        song: document.querySelector('input[name=showSong]:checked').value,
+        status: 'pending'
+    });
+    // Clear the universities but keep the sport — the next ceremony is usually the same event.
+    MEDALS.forEach(m => setPick(m, null));
+    if (tieCheck.checked) { tieCheck.checked = false; tieCheck.dispatchEvent(new Event('change')); }
+    document.querySelectorAll('.medal-box:not(.sport) input[type=search]').forEach(inp => { inp.value = ''; inp.dispatchEvent(new Event('input')); });
+    saveQueue(); renderQueue();
+    statusEl.textContent = `➕ Queued — ${queue.length} ceremon${queue.length === 1 ? 'y' : 'ies'} ready`;
+    statusEl.style.opacity = '1';
+});
+queueStartBtn.addEventListener('click', () => {
+    const first = queue.findIndex(e => e.status !== 'done');
+    queuePlay(first === -1 ? 0 : first);
+});
+queueNextBtn.addEventListener('click', queueNext);
+queueStopBtn.addEventListener('click', queueStop);
+document.getElementById('queueBarNext').addEventListener('click', queueNext);
+document.getElementById('queueBarStop').addEventListener('click', queueStop);
+queueClearBtn.addEventListener('click', () => {
+    if (qState.running && !confirm('The queue is running. Clear all queued ceremonies?')) return;
+    queueStop(); queue = []; saveQueue(); renderQueue();
+});
+
+loadQueue();
+renderQueue();
+
+// ============================================================
 // 12. TAB SWITCHING
 // ============================================================
 const tabs = {
     medal: document.getElementById('tabMedal'),
+    queue: document.getElementById('tabQueue'),
     main: document.getElementById('tabMain'),
     contingent: document.getElementById('tabContingent'),
     slides: document.getElementById('tabSlides')
 };
 const contents = {
     medal: document.getElementById('medalTabContent'),
+    queue: document.getElementById('queueTabContent'),
     main: document.getElementById('mainTabContent'),
     contingent: document.getElementById('contingentTabContent'),
     slides: document.getElementById('slidesTabContent')
@@ -1431,6 +1777,7 @@ function switchTab(name) {
     });
 }
 tabs.medal.addEventListener('click', () => switchTab('medal'));
+tabs.queue.addEventListener('click', () => switchTab('queue'));
 tabs.main.addEventListener('click', () => switchTab('main'));
 tabs.contingent.addEventListener('click', () => switchTab('contingent'));
 tabs.slides.addEventListener('click', () => switchTab('slides'));
@@ -1446,6 +1793,11 @@ document.addEventListener('keydown', (e) => {
             if (activeAudioEl.paused) activeAudioEl.play();
             else activeAudioEl.pause();
         }
+    }
+    if ((e.key === 'n' || e.key === 'N') && qState.running) {
+        e.preventDefault();
+        queueNext();
+        return;
     }
     if (e.key === 'ArrowRight' && slides.length) {
         const next = (currentSlideIndex + 1) % slides.length;

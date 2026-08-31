@@ -19,6 +19,19 @@ Open both by double-clicking them from the same folder, in the same browser (Chr
 
 Every shown medal slide is also kept in the Slides tab (←/→ to step through, useful for a replay).
 
+## Back-to-back ceremonies (🎬 Queue tab)
+When several events finish at once, you no longer have to wait for one anthem to end before setting up the next medallists.
+
+1. Build a ceremony on the Medal Slide tab exactly as above, but press **➕ Add to queue** instead of Show on projector. The medal boxes clear straight away (the sport stays — the next event is usually the same one) so you can enter the following ceremony immediately, even while a ceremony is on the projector.
+2. Queue them all up, then on the **🎬 Queue** tab press **▶ Start queue**. Each ceremony puts its slide on the projector and starts its song together — the same thing Show on projector does, one button per ceremony.
+3. When the medallists are ready, press **⏭ Next ceremony**. It also sits next to the master volume, so it is reachable from any tab, and the **N** key does the same.
+4. Tick **Auto-advance when the song ends** to move on by itself after the chosen gap (3–30 s). It is off by default — medallists leave the podium at their own pace, so advancing is normally the officer's call. When the song finishes the queue bar says so and waits.
+
+Per row: **▶** show that one now (jump the order), **↑ ↓** reorder, **✎** load it back into the editor to correct it (this takes it out of the queue — ➕ Add to queue puts it back), **✕** remove. The row being shown is locked while it is live.
+
+**⏹ Stop queue** leaves the ceremonies in place so you can restart; **🧹 Clear queue** empties it. The queue is saved in the browser, so an accidental refresh mid-event does not lose it.
+
+
 ## Files
 - `teams.js` — the 64 registered institutions: `id` (from online.sukipt.com.my), `name`, `short` (search code), `logo` (in `LogoIPT/`), `anthem` (in `music/Lagu Universiti/`, `null` = use LAGU SUKIPT). Edit this to add or rename an institution.
 - `Template Majlis Sukipt.png` — the three-flag background. The four-flag tie layout is synthesised from it; to use a hand-made 4-flag template, add the file and set `TEMPLATE4` in `presenter.html`.
